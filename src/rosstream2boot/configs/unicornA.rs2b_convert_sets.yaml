@@ -1,0 +1,11 @@
+- id: unicornA_1
+  desc: "Example test"
+  adapters: # These are robot_adapters
+  - unicornA_base1_tw_cf
+  logs: # These are logs
+  #- unicornA_base1_2013-04-03-13-16-53
+  - unicornA_base1_2013-04-03-12-58-11
+
+
+
+

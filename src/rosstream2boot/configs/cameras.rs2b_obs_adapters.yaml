@@ -1,0 +1,14 @@
+
+- id: unicornA_cr_320
+  desc: Eye right camera
+  code:
+  - rosstream2boot.library.CameraAdapterGray
+  - topic: '/cam_eye_right/image_raw/compressed'
+    shape: [240, 320]
+
+- id: unicornA_cf_320
+  desc: Front camera
+  code:
+  - rosstream2boot.library.CameraAdapterGray
+  - topic: '/cam_back/image_raw/compressed'
+    shape: [240, 320]
