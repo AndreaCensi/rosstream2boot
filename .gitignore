@@ -35,3 +35,4 @@ nosetests.xml
 .pydevproject
 out-rs2b-list
 .compmake_history.txt
+conf.subl*
