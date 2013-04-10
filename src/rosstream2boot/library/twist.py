@@ -1,7 +1,8 @@
-from rosstream2boot.interfaces.ros_adapter import ROSCommandsAdapter
+from rosstream2boot.interfaces import ROSCommandsAdapter
 from bootstrapping_olympics.interfaces.streamels import make_streamels_1D_float
 import numpy as np
 from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
+import warnings
 
 
 class TwistAdapter(ROSCommandsAdapter):
@@ -19,13 +20,20 @@ class TwistAdapter(ROSCommandsAdapter):
         return StreamSpec(id_stream=None, streamels=streamels, extra=None)
     
     def commands_from_messages(self, messages):
+        """
+            Converts the ROS topics listed here to a numpy array.
+            Returns commands_source (name of agent), array.
+        """
+
         msg = messages[self.topic]
         u = np.zeros(3, 'float32')        
         u[0] = msg.linear.x
         u[1] = msg.linear.y
         u[2] = msg.angular.z
-        u = np.clip(u, -1, 1)
-        return u
+        commands = np.clip(u, -1, 1)
+        commands_source = 'twist'  # XXX
+        warnings.warn('Must implement proper commands_source.')
+        return commands_source, commands
     
     def messages_from_commands(self, commands):
         msg = geometry_msgs.msg.Twist()  # @UndefinedVariable

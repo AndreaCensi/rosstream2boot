@@ -1,9 +1,8 @@
-from contracts import contract
-from rosstream2boot.config.rbconfig import get_rs2b_config
-from abc import abstractmethod, ABCMeta
-import rosbag
 from .. import logger
+from abc import abstractmethod, ABCMeta
+from contracts import contract
 from procgraph_ros.bag_utils import read_bag_stats
+from rosstream2boot.config.rbconfig import get_rs2b_config
 
 
 class ExperimentLog:
@@ -11,38 +10,41 @@ class ExperimentLog:
     
     @abstractmethod
     def read_all(self, topics):
-        """ Yields topic, msg, t """
+        """ Yields topic, msg, t, extra """
     
+    @abstractmethod
+    def get_id_environment(self):
+        pass
+ 
  
 class ExpLogFromYaml(ExperimentLog):
     
     @contract(files='dict(str:str)', annotations='dict(str:*)')
     def __init__(self, files, annotations):
+        """
+            List of annotations used:
+            
+                annotations['environment']['name'] => id_environment used
+        
+        """
         self.files = files
         self.annotations = annotations
 
     def read_all(self, topics):
         bagfile = self.files['bag']
-#         logger.debug('Reading bag file: %s' % bagfile)
-#         bag = rosbag.Bag(bagfile)
-#         logger.debug('- bag opened')
-#         first = True
         return read_bag_stats(bagfile, topics=topics, logger=logger)
-#         for topic, msg, t in bag.read_messages(topics=topics):
-#             if first:
-#                 logger.debug('- first arrived')
-#                 first = False
-#             yield topic, msg, t
 
+    def get_id_environment(self):
+        return self.annotations['environment']['name']
 
-class LogSlice(ExperimentLog):
-    
-    def __init__(self, id_log, t0, duration):
-        self.id_log = id_log
-        self.t0 = t0
-        self.duration = duration
-        
-        self.log = get_rs2b_config().explogs  # XXX
+# class LogSlice(ExperimentLog):
+#     
+#     def __init__(self, id_log, t0, duration):
+#         self.id_log = id_log
+#         self.t0 = t0
+#         self.duration = duration
+#         
+#         self.log = get_rs2b_config().explogs  # XXX
 
 
 class MultiLog(ExperimentLog):
@@ -57,6 +59,9 @@ class MultiLog(ExperimentLog):
             log = config.explogs.instance(id_log)
             self.logs.append(log)
 
+    def get_id_environment(self):
+        raise NotImplementedError()
+    
     def read_all(self, topics):
         for l in self.logs:
             # Change episode?

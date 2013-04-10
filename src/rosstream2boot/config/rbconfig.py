@@ -1,5 +1,6 @@
 
 from conf_tools import ConfigMaster
+from bootstrapping_olympics.configuration.master import get_boot_config
 
 
 class RBConfigMaster(ConfigMaster):
@@ -18,9 +19,14 @@ class RBConfigMaster(ConfigMaster):
         self.cmd_adapters = self.add_class_generic('cmd_adapters', '*.rs2b_cmd_adapters.yaml',
                                                    ROSCommandsAdapter)
 
-        self.convert_sets = self.add_class('convert_sets', '*.rs2b_convert_sets.yaml',
-                                                   check_good_convert_set)
+#         self.convert_sets = self.add_class('convert_sets', '*.rs2b_convert_sets.yaml',
+#                                                    check_good_convert_set)
 
+        # XXX
+        from rosstream2boot.programs.convert import ConvertJob
+        self.convert_jobs = self.add_class_generic('convert_jobs',
+                                                   '*.rs2b_convert_jobs.yaml',
+                                                   ConvertJob)
 
         
     def get_default_dir(self):
@@ -33,14 +39,11 @@ class RBConfigMaster(ConfigMaster):
 def get_rs2b_config():
     if RBConfigMaster.singleton is None:
         RBConfigMaster.singleton = RBConfigMaster()
-#         msg = 'Must call set_rs2b_config() before.'
-#         raise Exception(msg)
+        # XXX: make it better
+        get_boot_config().load(RBConfigMaster.singleton.get_default_dir())
     return RBConfigMaster.singleton 
 
 def set_rs2b_config(c):
     RBConfigMaster.singleton = c  
 
-
-def check_good_convert_set(x):
-    pass  # TODO
     

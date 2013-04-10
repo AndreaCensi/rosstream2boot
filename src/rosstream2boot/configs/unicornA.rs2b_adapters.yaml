@@ -14,9 +14,56 @@
 - id: unicornA_base1_tw_cf
   desc: Only front camera
   code:
-  - rosstream2boot.ROSRobotAdapter_from_yaml
+  - rosstream2boot.ROSRobotAdapter.from_yaml
   - obs_adapter: unicornA_cf_320
     cmd_adapter: twist_1_1
+    sync:
+      policy: obs-first-topic
+
+- id: unicornA_base1_tw_hr
+  desc: Only right (?) hokuyo
+  code:
+  - rosstream2boot.ROSRobotAdapter.from_yaml
+  - obs_adapter: unicornA_hr
+    cmd_adapter: twist_1_1
+    sync:
+      policy: obs-first-topic
+
+- id: unicornA_base1_tw_hl
+  desc: Only left (?) hokuyo
+  code:
+  - rosstream2boot.ROSRobotAdapter.from_yaml
+  - obs_adapter: unicornA_hl
+    cmd_adapter: twist_1_1
+    sync:
+      policy: obs-first-topic
+
+- id: unicornA_base1_tw_hlhr
+  desc: Only left (?) hokuyo
+  code:
+  - rosstream2boot.ROSRobotAdapter.from_yaml
+  - obs_adapter: unicornA_hlhr
+    cmd_adapter: twist_1_1
+    sync:
+      policy: obs-first-topic
+
+- id: unicornA_base1_tw_hlhr_sane
+  desc: Only left (?) hokuyo
+  code:
+  - rosstream2boot.ROSRobotAdapter.from_yaml
+  - obs_adapter: unicornA_hlhr_sane
+    cmd_adapter: twist_1_1
+    sync:
+      policy: obs-first-topic
+
+- id: unicornA_base1_tw_hlhr_sane_s4
+  desc: Only left (?) hokuyo
+  code:
+  - rosstream2boot.ROSRobotAdapter.from_yaml
+  - obs_adapter: unicornA_hlhr_sane_s4
+    cmd_adapter: twist_1_1
+    sync:
+      policy: obs-first-topic
 
 # - id: unicornA_base1_crcf
 # - id: unicornA_base1_crcfhrhl

@@ -9,16 +9,22 @@ class JustList(QuickApp):
         params.add_string_list('config', help='Configuration directory')
         params.add_flag('verbose', help='Instances all configuration')
         
+        config = get_rs2b_config()
+        classes = config.get_classes() 
+        examples = ', '.join(classes)
+        params.add_string('type', help='Only print one type of objects (%s)' % examples)
+        
     def define_jobs(self):
         options = self.get_options()
         
         config = get_rs2b_config()
 
         config.load(config.get_default_dir())
-        for d in options.config:
-            config.load(d)
+        if options.config:
+            for d in options.config:
+                config.load(d)
         
-        config.print_summary(sys.stdout, instance=options.verbose)
+        config.print_summary(sys.stdout, instance=options.verbose, only_type=options.type)
         
 #         for id_explog in R2BConfig.explogs:
 #             self.comp(list_explog, config, id_explog)
