@@ -235,7 +235,7 @@
 #         robot: *unicornA_tran1
 #         motion:
 #           agent: babbler  
-#         environment: &lab_empty
+#         environment: *lab_empty
 #         events:
 #           disturbances: []
 #         notes: | 
@@ -245,6 +245,50 @@
 #
 
            
+- id: unicornA_base1_2013-04-11-20-14-27
+  desc: ""
+  code:
+    - rosstream2boot.ExpLogFromYaml
+    - files:
+        "file:bag": ~/01-youbot-ros-logs-good/unicornA_base1_2013-04-11-20-14-27.bag
+        "file:outside": ~/01-youbot-ros-logs-good/unicornA_base1_2013-04-11-20-14-27.outside.mp4
+      annotations:
+        robot: *unicornA_base1
+        motion:
+          agent: babbler  
+        environment: &lab_emptyw
+          name: vehicles_lab
+          config: emptyw
+        events:
+          disturbances: []
+        notes: | 
+          Now I finally realized that black does not reflect the Hokuyo
+          I turned the barriers around, white instead of random patterns.
+          Ends after 30 min, ok.
+        
+
+- id: unicornA_tran1_2013-04-11-23-21-36 
+  desc: This is a manually controlled run in a small corner of the lab using translation. 
+  code:
+    - rosstream2boot.ExpLogFromYaml
+    - files:
+        "file:bag": ~/01-youbot-ros-logs-good/unicornA_tran1_2013-04-11-23-21-36.bag
+      annotations:
+        robot: *unicornA_base1
+        motion:
+          agent: manual
+        environment: 
+          name: lab_corner
+          config: default
+        events:
+          disturbances: []
+        notes: | 
+          no video
+          moved using only translations
+
+
+##########################################
+# Template:
 # - id:  
 #   desc: 
 #   code:
@@ -260,6 +304,6 @@
 #         events:
 #           disturbances: []
 #         notes: | 
-
+##########################################
 
 

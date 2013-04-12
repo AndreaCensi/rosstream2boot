@@ -6,10 +6,12 @@ from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
 class ROSObservationsAdapter:
     __metaclass__ = ABCMeta
 
-    @contract(returns='list(str)')    
+    @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
-        """ Returns the list of topics that are relevant for us. """
-        pass
+        """ 
+            Returns the list of topics that are relevant for us
+            This is a list of tuples (topic, data_class).
+        """
         
     @abstractmethod
     @contract(returns=StreamSpec)

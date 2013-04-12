@@ -14,7 +14,7 @@ class ROSObservationsAdapterNuisance(ROSObservationsAdapter):
         self.adapter_spec = self.adapter.get_stream_spec()
         self.spec = self.nuisance.transform_spec(self.adapter_spec)
 
-    @contract(returns='list(str)')
+    @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
         """ Returns the list of topics that are relevant for us. """
         return self.adapter.get_relevant_topics()

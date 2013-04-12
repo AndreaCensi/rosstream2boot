@@ -14,12 +14,12 @@ class SensorJoin(ROSObservationsAdapter):
         self.specs = [x.get_stream_spec() for x in obs_adapters]
         self.streamels = [spec.get_streamels() for spec in self.specs]
         
-    @contract(returns='list(str)')    
+    @contract(returns='list(tuple(str,*))')        
     def get_relevant_topics(self): 
-        topics = set()
+        topics = []
         for x in self.obs_adapters:
-            topics.update(x.get_relevant_topics())
-        return list(topics)
+            topics.extend(x.get_relevant_topics())
+        return topics
     
     @contract(returns=StreamSpec)
     def get_stream_spec(self):

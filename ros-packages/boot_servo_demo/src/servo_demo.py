@@ -1,137 +1,197 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('youbot_agent')
-import sys
-import numpy as np
-from sensor_msgs.msg import PointCloud
-import rospy  # @UnresolvedImport
-import array_msgs.msg  # @UnresolvedImport
-roslib.load_manifest('laser_assembler')
-from laser_assembler.srv import *
-from youbot_agent.msg import Safety
-from rospy import ROSException
-import yaml
-from constraints import *
+import roslib; roslib.load_manifest('boot_servo_demo')  # @IgnorePep8
 
-class ServoDemo():
+from bootstrapping_olympics.programs.manager.meat.data_central import DataCentral
+from bootstrapping_olympics.programs.manager.meat.load_agent_state import load_agent_state
+import numpy as np
+import rospy 
+ 
+from ros_node_utils import ROSNode
+from rosstream2boot.nodes.ros_adapter_node import ROSRobotAdapterNode
+from rosstream2boot.config import get_rs2b_config
+from contracts import contract
+from bootstrapping_olympics.extra.ros.publisher.ros_publisher import ROSPublisher
+from reprep.plot_utils.axes import y_axis_set
+from procgraph_signals.history import HistoryInterval
+from std_srvs.srv import Empty, EmptyResponse
+
+STATE_WAIT = 'wait'
+STATE_SERVOING = 'servoing'
+
+class ServoDemo(ROSNode):
     """ 
         First implementation of a servo demo; a big node does everything.
         
-        Param:
+        Parameters:
+            boot_root: Root directory for the
+             
+            id_agent: id_agent  
+            id_robot: id_robot
+            
+            id_ros_robot_adapter: 
         
         Input:
         
         Output:
         
     """
+    def __init__(self):
+        ROSNode.__init__(self, 'ServoDemo')
+        
 
-    def main(self, args, node_name='hokuyo_safety'):
-        rospy.init_node(node_name)
-        rospy.loginfo('Started.')
+    def main(self):
+        rospy.init_node('servo_demo')
+        
+        self.info('Started.')
 
-        self.pub_safe = rospy.Publisher('~out_safe', PointCloud)
-        self.pub_unsafe = rospy.Publisher('~out_unsafe', PointCloud)
-        self.pub_safety = rospy.Publisher('~out_safety', Safety)
+        self.boot_root = rospy.get_param('~boot_root')
+        
+        self.id_ros_robot_adapter = rospy.get_param('~id_ros_robot_adapter')
+        self.id_agent = rospy.get_param('~id_agent')
+        self.id_robot = rospy.get_param('~id_robot')
+        
+        rs2b_config = get_rs2b_config()
+        self.ros_robot_adapter = rs2b_config.adapters.instance(self.id_ros_robot_adapter)
+        
+        self.data_central = DataCentral(self.boot_root)
+        
+        
+        self.agent, self.state = load_agent_state(self.data_central, self.id_agent, self.id_robot,
+                                        reset_state=False, raise_if_no_state=True)
+        
+        self.info('Loaded state: %s' % self.state)
+        
+        self.servo_agent = self.agent.get_servo()
 
-        self.warn_distance = rospy.get_param('~warn_distance', 0.65)
-        self.ignore_closer = rospy.get_param('~ignore_closer', 0.35)
+        
+        self.adapter_node = ROSRobotAdapterNode()
+        self.adapter_node.init_messages(ros_robot_adapter=self.ros_robot_adapter)
 
-        self.publish_clouds = rospy.get_param('~publish_clouds', True)
+        self.adapter_node.obs_callback(self.obs_ready)
+        
+        self.y0 = None
+        
+        self.publisher = ROSPublisher()
+        self.info('Finished initialization')
+        
+        
+        self.u_history = HistoryInterval(10)
+        
+        self.last_boot_data = None
+         
+        self.state = STATE_WAIT
 
-        rospy.loginfo('publish clouds: %r' % self.publish_clouds)
-
-        assert 0 <= self.ignore_closer < self.warn_distance
-
-        names = ['~assemble_scans%d' % i for i in range(2)]
-        self.init_services(names)
-
-        while not rospy.is_shutdown():
-            rospy.sleep(0.1)
-            self.periodic()
-
-    def periodic(self):
-
-        clouds = self.get_clouds()            
-        points = clouds[0].points + clouds[1].points
-        frame_id = clouds[0].header.frame_id
-
-        def norm(p):
-            return np.hypot(np.hypot(p.x, p.y), p.z)
-
-
-        p_safe = filter(lambda p: norm(p) > self.warn_distance, points)
-        p_unsafe = filter(lambda p: (norm(p) > self.ignore_closer) and 
-                                (norm(p) < self.warn_distance),
-                          points)
-
-        if self.publish_clouds:
-            pc_safe = PointCloud()            
-            pc_safe.header.frame_id = frame_id
-            pc_safe.points = p_safe
-            self.pub_safe.publish(pc_safe)
-
-            pc_unsafe = PointCloud()            
-            pc_unsafe.header.frame_id = frame_id
-            pc_unsafe.points = p_unsafe
-            self.pub_unsafe.publish(pc_unsafe)
-
-        if len(p_unsafe) > 0:
-            # find the closest unsafe point
-            norms = map(norm, p_unsafe)
-            closest = np.argmin(norms)
-            closest_dist = norms[closest]
-            assert closest_dist > self.ignore_closer
-            assert closest_dist < self.warn_distance
-            p0 = p_unsafe[closest]
-            angle = np.rad2deg(np.arctan2(p0.y, p0.x))
-            desc = ('Point at distance %.2fm angle %.1fdeg (x:%.2f, y:%.2f) ign: %s warn: %s' 
-                    % (norms[closest], angle, p0.x, p0.y, self.ignore_closer, self.warn_distance))
-            plane = [p0.x, p0.y]
-            constraints = [constraint_plane(desc=desc, plane=plane)]
+        rospy.Service('set_goal', Empty, self.srv_set_goal)
+        rospy.Service('start_servo', Empty, self.srv_start_servo)
+        rospy.Service('stop_servo', Empty, self.srv_stop_servo)
+   
+        rospy.spin()    
+        
+    # Gui
+    def srv_set_goal(self, req):  # @UnusedVariable
+        self.info('called "set_goal"')
+        if self.last_boot_data is not None:
+            self.set_goal_observations(self.last_boot_data['observations'])
         else:
-            constraints = []
+            self.info('I have no observations yet.')
+        return EmptyResponse()
+        
+    def srv_start_servo(self, req):  # @UnusedVariable
+        self.info('called "start_servo"')
+        self.state = STATE_SERVOING
+        return EmptyResponse()
+    
+    def srv_stop_servo(self, req):  # @UnusedVariable
+        self.info('called "stop_servo"')
+        self.state = STATE_WAIT
+        return EmptyResponse()
+
+    def obs_ready(self, msg):  # @UnusedVariable
+        # Callback called when ready
+        buf = self.adapter_node.get_boot_observations_buffer()
+        if len(buf) > 1:
+            # self.info('Warning: dropping %d observations (too slow?).' % (len(buf) - 1))
+            pass
+        boot_data = buf[-1]
+        self.last_boot_data = boot_data.copy()
+        
+        commands = self.get_servo_commands(boot_data)
+        
+        msg = 'u_raw: %8.3f %8.3f %8.3f ' % tuple(commands)
+        
+        
+        if self.state == STATE_WAIT:
+            self.info('hold %s' % msg)
+            pass
+        elif self.state == STATE_SERVOING:
+            self.info('send %s' % msg)
+            self.adapter_node.send_commands(commands)
+        
+        
+    def get_servo_commands(self, boot_data):
+        t = boot_data['timestamp']
+        y = boot_data['observations']
+        
+        if self.y0 is None:
+            self.set_goal_observations(y)
+
+        e_raw = y - self.y0
+        e_limit = 0.1 
+        too_far = np.abs(e_raw) > e_limit 
+
+        boot_data['observations'][too_far] = self.y0[too_far]
+
+        self.servo_agent.process_observations(boot_data)
+    
+        res = self.servo_agent.choose_commands2()  # repeated
+        self.u_history.push(t, res['u_raw'])
+        
+        msg = 'u_raw: %8.3f %8.3f %8.3f ' % tuple(res['u_raw'])
+        msg += 'u    : %8.3f %8.3f %8.3f ' % tuple(res['u'])
 
         
-        msg_safety = Safety()
-        msg_safety.id_check = 'hokuyo_safety'
-        msg_safety.header.stamp = rospy.Time.now()
-        msg_safety.constraints = yaml.dump(constraints)
+        publish = False
+        if publish:
+            pub = self.publisher
+            
+            sec = pub.section('servo')
+            sec.array('y', y)
+            sec.array('y0', self.y0)
+            
+            with sec.plot('both') as pylab:
+                pylab.plot(self.y0, 'sk')
+                pylab.plot(y, '.g')
+                
+                y_axis_set(pylab, -0.1, 1.1)
+                
+            e = y - self.y0
+            with sec.plot('error') as pylab:
+                pylab.plot(e, '.m')
+                # y_axis_set(pylab, -1.1, 1.1)
+                y_axis_set(pylab, -e_limit - 0.1, e_limit + 0.1)
+            
+            ts, us = self.u_history.get_ts_xs()
+            us = np.array(us)            
+            with sec.plot('u') as pylab:
+                pylab.plot(ts, us)
+                y_axis_set(pylab, -1.1, 1.1)
+         
+        commands = res['u']
         
-        if p_unsafe:
-            msg_safety.safe = False
-            msg_safety.desc = '%d unsafe points' % len(p_unsafe)
-        else:
-            msg_safety.safe = True
-            msg_safety.desc = 'OK' 
-        
-        self.pub_safety.publish(msg_safety)
+        # commands = -commands
+        commands[0] = 0
+        commands[1] = 0
+        # commands[2] = 0
 
-    def init_services(self, names , timeout=1):
-        rospy.loginfo('Opening service proxies...')
-        srv_assemble = []
-        for n in names:
-            rospy.wait_for_service(n, timeout=timeout)
-            rospy.loginfo('Connecting to %s' % n)
-            x = rospy.ServiceProxy(n, AssembleScans, persistent=True)
-            rospy.loginfo('Connecting to %s [done]' % n)
-            srv_assemble.append(x)
-        self.services = srv_assemble
-
-    def get_services(self):
-        return self.services
-
-    def get_clouds(self):
-        clouds = []
-        services = self.get_services()
-        for i, srv in enumerate(services):
-            resp = srv(rospy.Time(0, 0), rospy.get_rostime())
-            # rospy.loginfo('Cloud %d: %s points' %(i,  len(resp.cloud.points)))
-            clouds.append(resp.cloud)
-        return clouds
+        return commands
     
 
-def main(args):
-    ServoDemo().main(args)
-   
+    @contract(y='array')
+    def set_goal_observations(self, y):
+        self.y0 = y.copy()
+        self.servo_agent.set_goal_observations(self.y0)
+        
+ 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    ServoDemo().main()

@@ -6,11 +6,21 @@ from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
 class ROSCommandsAdapter():
     __metaclass__ = ABCMeta
 
-    @contract(returns='list(str)')    
+    @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
-        """ Returns the list of topics that are relevant for us. """
-        pass
-        
+        """ 
+            Returns the list of topics that are relevant for us
+            This is a list of tuples (topic, data_class).
+        """
+
+    @abstractmethod
+    @contract(returns='list(tuple(str,*))')    
+    def get_published_topics(self):
+        """ 
+            Returns the list of topics that we need to publish to.
+            This is a list of tuples (topic, data_class).
+        """
+
     @abstractmethod
     @contract(returns=StreamSpec)
     def get_stream_spec(self):
@@ -26,7 +36,7 @@ class ROSCommandsAdapter():
         """
 
     @abstractmethod
-    @contract(returns='dict(str:*)')
-    def messages_from_commands(self):
-        """ Must return a topic or a message. """
+    @contract(returns='dict(str:*)', commands='array')
+    def messages_from_commands(self, commands):
+        """ Returns the messages to publish. """
             
