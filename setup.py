@@ -34,8 +34,7 @@ setup(
     packages=find_packages('src'),
     entry_points={
      'console_scripts': [
-       'rs2b-list = rosstream2boot.programs:main_list',
-       'rs2b-convert = rosstream2boot.programs:main_convert',
+       'rs2b = rosstream2boot.programs:main_rs2b'
       ]
     },
     install_requires=[

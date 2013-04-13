@@ -2,6 +2,8 @@ from bootstrapping_olympics.interfaces import RobotObservations
 from bootstrapping_olympics.interfaces.boot_spec import BootSpec
 from contracts import contract
 from rosstream2boot.config.rbconfig import get_rs2b_config
+from nav_msgs.msg._Odometry import Odometry
+from geometry.poses import SE3_from_SE2, SE2_from_translation_angle
 
 
 
@@ -21,7 +23,9 @@ class ROSRobotAdapter(object):
         
         self.obs_topics = self.obs_adapter.get_relevant_topics()
         self.cmd_topics = self.cmd_adapter.get_relevant_topics()
-        self.relevant_topics = self.obs_topics + self.cmd_topics
+        self.odom_topic = '/odom'
+        self.my_topics = [(self.odom_topic, Odometry)]
+        self.relevant_topics = self.obs_topics + self.cmd_topics + self.my_topics
         
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
@@ -33,7 +37,6 @@ class ROSRobotAdapter(object):
         """ Returns the list of topics that we want to publish. """
         return self.cmd_adapter.get_published_topics()
 
-    
     @contract(returns=BootSpec)
     def get_spec(self):
         return self.boot_spec
@@ -55,7 +58,15 @@ class ROSRobotAdapter(object):
             commands_source, commands = self.cmd_adapter.commands_from_messages(messages)            
             episode_end = False
             timestamp = last_t.to_sec()
-            robot_pose = None
+            
+            odometry = messages[self.odom_topic]
+            ros_pose = odometry.pose.pose
+            x = ros_pose.position.x
+            y = ros_pose.position.y
+            theta = ros_pose.orientation.z
+            
+            robot_pose = SE3_from_SE2(SE2_from_translation_angle([x, y], theta))
+            
             return RobotObservations(timestamp=timestamp,
                                      observations=observations,
                                      commands=commands, commands_source=commands_source,

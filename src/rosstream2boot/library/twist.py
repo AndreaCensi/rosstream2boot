@@ -32,13 +32,17 @@ class TwistAdapter(ROSCommandsAdapter):
             Returns commands_source (name of agent), array.
         """
         msg = messages[self.topic]
+        # assert isinstance(msg, Twist)
+
         u = np.zeros(3, 'float32')        
         u[0] = msg.linear.x / self.max_lin_vel
         u[1] = msg.linear.y / self.max_lin_vel
         u[2] = msg.angular.z / self.max_ang_vel
         commands = np.clip(u, -1, 1)
+    
         commands_source = 'twist'  # XXX
         warnings.warn('Must implement proper commands_source.')
+        
         return commands_source, commands
     
     @contract(returns='dict(str:*)', commands='array')

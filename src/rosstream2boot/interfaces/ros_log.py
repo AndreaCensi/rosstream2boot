@@ -30,8 +30,11 @@ class ExpLogFromYaml(ExperimentLog):
         self.files = files
         self.annotations = annotations
 
+    def get_bagfile(self):
+        return self.files['bag']
+    
     def read_all(self, topics):
-        bagfile = self.files['bag']
+        bagfile = self.get_bagfile()
         return read_bag_stats(bagfile, topics=topics, logger=logger)
 
     def get_id_environment(self):
