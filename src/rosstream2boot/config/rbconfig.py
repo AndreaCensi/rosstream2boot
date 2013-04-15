@@ -23,7 +23,7 @@ class RBConfigMaster(ConfigMaster):
 #                                                    check_good_convert_set)
 
         # XXX
-        from rosstream2boot.programs.convert import ConvertJob
+        from rosstream2boot.programs import ConvertJob
         self.convert_jobs = self.add_class_generic('convert_jobs',
                                                    '*.rs2b_convert_jobs.yaml',
                                                    ConvertJob)

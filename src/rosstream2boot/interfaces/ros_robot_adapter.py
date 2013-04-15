@@ -1,10 +1,10 @@
-from bootstrapping_olympics.interfaces import RobotObservations
-from bootstrapping_olympics.interfaces.boot_spec import BootSpec
+from .. import logger
+from bootstrapping_olympics import RobotObservations
+from bootstrapping_olympics import BootSpec
 from contracts import contract
-from rosstream2boot.config.rbconfig import get_rs2b_config
-from nav_msgs.msg._Odometry import Odometry
-from geometry.poses import SE3_from_SE2, SE2_from_translation_angle
-
+from geometry import SE3_from_SE2, SE2_from_translation_angle
+from nav_msgs.msg import Odometry
+from rosstream2boot.config import get_rs2b_config
 
 
 class ROSRobotAdapter(object):
@@ -26,6 +26,10 @@ class ROSRobotAdapter(object):
         self.odom_topic = '/odom'
         self.my_topics = [(self.odom_topic, Odometry)]
         self.relevant_topics = self.obs_topics + self.cmd_topics + self.my_topics
+        
+        
+        self.debug_nseen = 0
+        self.debug_nskipped = 0
         
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
@@ -53,9 +57,23 @@ class ROSRobotAdapter(object):
             returns: an instance of RobotObservations, or None if the update is not ready.
                 
         """
+        self.debug_nseen += 1
+        
         if self.is_ready(messages, last_topic, last_msg, last_t):    
             observations = self.obs_adapter.observations_from_messages(messages)
-            commands_source, commands = self.cmd_adapter.commands_from_messages(messages)            
+            cmds = self.cmd_adapter.commands_from_messages(messages)
+            if cmds is None:
+                # we couldn't interpret a meaningful message for use
+                # logger.info('Skipping because not interpretable by my cmd_adapter.')
+                self.debug_nskipped += 1
+                if self.debug_nskipped % 100 == 0:
+                    perc = 100.0 * self.debug_nskipped / self.debug_nseen
+                    msg = ('Skipped %6d/%6d  = %.1f%% because cmd_adapter could not interpret.' % 
+                           (self.debug_nskipped, self.debug_nseen, perc))
+                    logger.info(msg)
+                return None
+            
+            commands_source, commands = cmds
             episode_end = False
             timestamp = last_t.to_sec()
             

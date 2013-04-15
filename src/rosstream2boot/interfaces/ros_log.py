@@ -30,6 +30,10 @@ class ExpLogFromYaml(ExperimentLog):
         self.files = files
         self.annotations = annotations
 
+    def get_outside_movie(self):
+        """ REturns filename for external movie, or None if not available. """
+        return self.files.get('outside', None)
+    
     def get_bagfile(self):
         return self.files['bag']
     

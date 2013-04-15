@@ -6,6 +6,7 @@ from quickapp.library.app.quickapp_imp import quickapp_main
 
 
 class RS2B(QuickMultiCmdApp):
+    
     cmd = 'rs2b'
     short = 'Main program'
     
@@ -31,6 +32,7 @@ class RS2B(QuickMultiCmdApp):
         self.rs2b_config = config
         self.boot_config = boot_config
                   
+                 
                              
 class RS2BCmd(QuickMultiCmd):
     

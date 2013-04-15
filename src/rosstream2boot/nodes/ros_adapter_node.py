@@ -18,7 +18,6 @@ class ROSRobotAdapterNode(ROSNode):
         that there are observations ready    
     """
     
-    
     def __init__(self):
         ROSNode.__init__(self, 'ROSObsAdapterNode') 
         self.buffer = []
@@ -92,7 +91,6 @@ class ROSRobotAdapterNode(ROSNode):
     def obs_callback(self, callback):
         """ Gives a callback to be called when boot observations are ready """
         rospy.Subscriber('~boot_observations_ready', String, callback)
-
             
     @contract(returns='list')
     def get_boot_observations_buffer(self):
