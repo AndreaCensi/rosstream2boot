@@ -44,6 +44,30 @@ class ExpLogFromYaml(ExperimentLog):
     def get_id_environment(self):
         return self.annotations['environment']['name']
 
+    def get_metadata(self):
+        md = {}
+        a = self.annotations
+        md['robot_name'] = a['robot']['name']        
+        md['robot_shape'] = a['robot']['shape']
+        md['robot_profile'] = a['robot']['profile']
+                
+        md['environment_name'] = a['environment']['name']
+        md['environment_config'] = a['environment']['config']
+        return md
+        
+#         annotations:
+#             robot: &unicornA_base1
+#               name: unicorn
+#               shape: unicornA
+#               profile: base1
+#             motion:
+#               agent: babbler  
+#             environment: &lab_boxes3
+#               name: vehicles_lab
+#               config: boxes3
+#     
+
+
 # class LogSlice(ExperimentLog):
 #     
 #     def __init__(self, id_log, t0, duration):
