@@ -96,6 +96,8 @@ class RS2BConvertBatch(RS2BCmd):
 @RS2Bsub
 class RS2BConvertOne(RS2BCmd):
     cmd = 'convert-one'
+    # Assumes parent.get_rs2b_config()
+    
     # TODO: episode_prefix: does it really matter?
     
     def define_options(self, params):
@@ -119,7 +121,7 @@ class RS2BConvertOne(RS2BCmd):
         id_episode = id_stream
         id_agent = None
         
-        context.comp(do_convert_job,
+        return context.comp(do_convert_job,
                 data_central=data_central,
                 config=config,
                 id_robot=id_robot,
@@ -128,9 +130,8 @@ class RS2BConvertOne(RS2BCmd):
                 id_stream=id_stream,
                 id_episode=id_episode,
                 id_agent=id_agent,
-                check_valid_values=False)
-
-
+                check_valid_values=False) 
+        
         
 
 def do_convert_job(data_central, config, id_robot, id_adapter, id_log, id_stream, id_episode, id_agent,
@@ -199,4 +200,4 @@ def do_convert_job(data_central, config, id_robot, id_adapter, id_log, id_stream
             extra['odom'] = obs.robot_pose.tolist()
             writer.push_observations(observations=boot_observations,
                                      extra=extra)
-            
+    return id_episode

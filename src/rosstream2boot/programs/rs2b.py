@@ -32,15 +32,20 @@ class RS2B(QuickMultiCmdApp):
         self.rs2b_config = config
         self.boot_config = boot_config
                   
+    def get_rs2b_config(self):
+        return self.rs2b_config
+
+    def get_boot_config(self):
+        return self.boot_config
                  
                              
 class RS2BCmd(QuickMultiCmd):
     
     def get_rs2b_config(self):
-        return self.get_parent().rs2b_config
+        return self.get_parent().get_rs2b_config()
 
     def get_boot_config(self):
-        return self.get_parent().boot_config
+        return self.get_parent().get_boot_config()
 
 
 def RS2Bsub(x):  # decorator

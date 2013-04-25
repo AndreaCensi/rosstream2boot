@@ -5,6 +5,7 @@ from bootstrapping_olympics.interfaces.streamels import make_streamels_2D_float
 from procgraph_ros.conversions import ros2rgb
 from procgraph_images.filters import rgb2gray
 import numpy as np
+from sensor_msgs.msg import CompressedImage
 
 
 class CameraAdapterGray(ROSObservationsAdapter):
@@ -14,10 +15,10 @@ class CameraAdapterGray(ROSObservationsAdapter):
         self.topic = topic
         self.shape = shape
     
-    @contract(returns='list(str)')    
+    @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
-        return [self.topic]
-    
+        return [(self.topic, CompressedImage)]
+
     @contract(returns=StreamSpec)
     def get_stream_spec(self):
         streamels = make_streamels_2D_float(shape=self.shape, lower=0, upper=1)
