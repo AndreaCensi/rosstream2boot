@@ -1,10 +1,11 @@
 import rospy
 from contracts import contract
-from rosstream2boot.interfaces.ros_robot_adapter import ROSRobotAdapter
+from rosstream2boot.interfaces import ROSRobotAdapter
 from ros_node_utils.nodes.ros_node import ROSNode
 from rospy.rostime import Time
 from std_msgs.msg import String
 from bootstrapping_olympics.interfaces.observations import ObsKeeper
+import warnings
 
 
 class ROSRobotAdapterNode(ROSNode):
@@ -23,14 +24,15 @@ class ROSRobotAdapterNode(ROSNode):
         self.buffer = []
         self.counter = 0
         
-    @contract(ros_robot_adapter=ROSRobotAdapter)    
-    def init_messages(self, ros_robot_adapter):
+    @contract(adapter=ROSRobotAdapter)    
+    def init_messages(self, adapter):
         self.topic2message = {}
-        self.ros_robot_adapter = ros_robot_adapter
+        self.adapter = adapter
         
-        # XXX
-        boot_spec = self.ros_robot_adapter.get_spec()
-        self.obs_keeper = ObsKeeper(boot_spec, id_robot='XXX', check_valid_values=True)
+        warnings.warn('id_robot')
+        boot_spec = self.adapter.get_spec()
+        self.obs_keeper = ObsKeeper(boot_spec, id_robot='XXX',
+                                    check_valid_values=True)
         
         self.init_messages_subscribers()
         self.init_messages_publishers()
@@ -39,20 +41,19 @@ class ROSRobotAdapterNode(ROSNode):
 
     def init_messages_subscribers(self):
         # list of tuples (topic, data_class)
-        topics = self.ros_robot_adapter.get_relevant_topics()
+        topics = self.adapter.get_relevant_topics()
         
         for topic, data_class in topics:
             self.info('Subscribing to %s' % topic)
-            rospy.Subscriber(topic, data_class, self.callback, callback_args=topic)
-
+            rospy.Subscriber(topic, data_class,
+                             self.callback, callback_args=topic)
 
     def init_messages_publishers(self):
         self.publishers = {}
-        pub_topics = self.ros_robot_adapter.get_published_topics()
+        pub_topics = self.adapter.get_published_topics()
         for topic, data_class in pub_topics:
             self.info('Publishing to %s' % topic)
             self.publishers[topic] = rospy.Publisher(topic, data_class)
-        
     
     def callback(self, msg, topic):
         # self.info('Received %s' % topic)
@@ -62,8 +63,8 @@ class ROSRobotAdapterNode(ROSNode):
         self.check_ready(topic, msg, Time.now())
         
     def check_ready(self, last_topic, last_msg, last_t):
-        obs = self.ros_robot_adapter.get_observations(self.topic2message,
-                                                      last_topic, last_msg, last_t)  
+        obs = self.adapter.get_observations(self.topic2message,
+                                            last_topic, last_msg, last_t)  
         if obs is None:
             # not ready
             # self.info('Not ready yet msgs=%s last:%s' % (self.topic2message.keys(), last_topic))
@@ -73,9 +74,11 @@ class ROSRobotAdapterNode(ROSNode):
             observations = obs.observations
             commands = obs.commands
             commands_source = obs.commands_source
+            warnings.warn('fill these up')
             id_episode = 'XXX'  # XXX
             id_world = 'xxx'  # XXX
-            obs_array = self.obs_keeper.push(timestamp, observations, commands, commands_source,
+            obs_array = self.obs_keeper.push(timestamp, observations,
+                                             commands, commands_source,
                                              id_episode, id_world)
         
             self.buffer.append(obs_array)
@@ -99,7 +102,7 @@ class ROSRobotAdapterNode(ROSNode):
         return b
     
     def send_commands(self, commands):
-        messages = self.ros_robot_adapter.messages_from_commands(commands)
+        messages = self.adapter.messages_from_commands(commands)
         for topic, msg in messages.items():
             self.publishers[topic].publish(msg)
               

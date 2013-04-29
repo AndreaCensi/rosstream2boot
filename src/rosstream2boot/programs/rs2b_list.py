@@ -14,7 +14,7 @@ class List(RS2BCmd):
         examples = ', '.join(classes)
         params.add_string('type', help='Only print one type of objects (%s)' % examples)
         
-    def define_jobs(self):
+    def define_jobs_context(self, context):
         options = self.get_options()        
         config = self.get_rs2b_config()
         config.print_summary(sys.stdout, instance=options.verbose, only_type=options.type)

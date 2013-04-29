@@ -10,29 +10,23 @@ class RBConfigMaster(ConfigMaster):
         from ..interfaces import (ROSObservationsAdapter, ROSCommandsAdapter,
                                   ROSRobotAdapter, ExperimentLog)
         
-        self.explogs = self.add_class_generic('explogs', '*.rs2b_explogs.yaml', ExperimentLog)
+        self.explogs = self.add_class_generic('explogs', '*.explogs.yaml', ExperimentLog)
         self.adapters = self.add_class_generic('adapters',
-                                               '*.rs2b_adapters.yaml',
+                                               '*.robot_adapters.yaml',
                                                ROSRobotAdapter)
-        self.obs_adapters = self.add_class_generic('obs_adapters', '*.rs2b_obs_adapters.yaml',
+        self.obs_adapters = self.add_class_generic('obs_adapters', '*.obs_adapters.yaml',
                                                     ROSObservationsAdapter)
-        self.cmd_adapters = self.add_class_generic('cmd_adapters', '*.rs2b_cmd_adapters.yaml',
+        self.cmd_adapters = self.add_class_generic('cmd_adapters', '*.cmd_adapters.yaml',
                                                    ROSCommandsAdapter)
 
-#         self.convert_sets = self.add_class('convert_sets', '*.rs2b_convert_sets.yaml',
-#                                                    check_good_convert_set)
-
-        # XXX
         from rosstream2boot.programs import ConvertJob
         self.convert_jobs = self.add_class_generic('convert_jobs',
-                                                   '*.rs2b_convert_jobs.yaml',
+                                                   '*.convert_jobs.yaml',
                                                    ConvertJob)
-
         
     def get_default_dir(self):
         from pkg_resources import resource_filename  # @UnresolvedImport
         return resource_filename("rosstream2boot", "configs")
-
 
     singleton = None
 

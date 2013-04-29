@@ -9,7 +9,7 @@ from procgraph_ros.bag_utils import read_bag_stats_progress
 from rosstream2boot import logger
 from rosstream2boot.config import set_rs2b_config
 from rosstream2boot.programs.rs2b import RS2BCmd, RS2Bsub
-import os
+import os 
 
 
 class ConvertJob():
@@ -131,8 +131,7 @@ class RS2BConvertOne(RS2BCmd):
                 id_episode=id_episode,
                 id_agent=id_agent,
                 check_valid_values=False) 
-        
-        
+     
 
 def do_convert_job(data_central, config, id_robot, id_adapter, id_log, id_stream, id_episode, id_agent,
                    check_valid_values=True):
@@ -170,6 +169,7 @@ def do_convert_job(data_central, config, id_robot, id_adapter, id_log, id_stream
     keeper = ObsKeeper(boot_spec=boot_spec, id_robot=id_robot,
                        check_valid_values=check_valid_values)
 
+    nvalid = 0
     with logs_format.write_stream(filename=filename, id_stream=id_stream,
                                   boot_spec=boot_spec) as writer:
         
@@ -178,16 +178,20 @@ def do_convert_job(data_central, config, id_robot, id_adapter, id_log, id_stream
         
         for topic, msg, t, ros_extra in show_progress:  # @UnusedVariable
             assert topic in topics
+            # print t, topic
             topic2last[topic] = msg
             
             # until we received all topics
             if len(topic2last) != len(topics):
+                # print('Not all topicss received (%s instead of %s)'
+                #      % (topic2last.keys(), topics))
                 continue
                 
             update = adapter.get_observations(topic2last, topic, msg, t)
             if update is None:
+                # print('skipping')
                 continue
-            
+                        
             obs = update                           
             boot_observations = keeper.push(timestamp=obs.timestamp,
                                             observations=obs.observations,
@@ -197,7 +201,12 @@ def do_convert_job(data_central, config, id_robot, id_adapter, id_log, id_stream
                                             id_world=id_environment)
 
             extra = {}
-            extra['odom'] = obs.robot_pose.tolist()
+            if obs.robot_pose is not None:
+                extra['odom'] = obs.robot_pose.tolist()
             writer.push_observations(observations=boot_observations,
                                      extra=extra)
+            
+            nvalid += 1
+    if nvalid == 0:
+        msg = 'No observations could be found in %s' % filename
     return id_episode
