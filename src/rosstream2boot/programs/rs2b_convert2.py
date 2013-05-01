@@ -99,13 +99,39 @@ def do_convert_job2(rs2b_config, boot_config,
     write_robot_observations(id_stream, filename, id_robot_res, robot, id_episode, id_environment)
     
     
+def bd_sequence_from_robot(id_robot, robot, sleep_wait, id_episode, id_environment,
+                           check_valid_values=False):
+    """
+    
+        :param robobs_seq: Sequence of RobotObservations
+        
+        :returns: iterator of bd array
+    """
+    
+    boot_spec = robot.get_spec() 
+
+    keeper = ObsKeeper(boot_spec=boot_spec, id_robot=id_robot,
+                       check_valid_values=check_valid_values)
+
+    for obs in iterate_robot_observations(robot, sleep_wait):
+        bd = keeper.push(timestamp=obs.timestamp,
+                                        observations=obs.observations,
+                                        commands=obs.commands,
+                                        commands_source=obs.commands_source,
+                                        id_episode=id_episode,
+                                        id_world=id_environment)
+        yield bd
+         
 @contract(robot=PassiveRobotInterface, filename='str', id_robot='str')
 def write_robot_observations(id_stream, filename, id_robot, robot, id_episode, id_environment):
     logs_format = LogsFormat.get_reader_for(filename)
 
     boot_spec = robot.get_spec() 
+
     keeper = ObsKeeper(boot_spec=boot_spec, id_robot=id_robot,
                        check_valid_values=False)
+
+    boot_spec = robot.get_spec() 
 
     nvalid = 0
     with logs_format.write_stream(filename=filename, id_stream=id_stream,

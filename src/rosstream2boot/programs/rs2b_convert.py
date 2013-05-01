@@ -5,7 +5,7 @@ from bootstrapping_olympics.programs.manager.meat.data_central import (
 from bootstrapping_olympics.utils import safe_makedirs
 from conf_tools.utils.friendly_paths import friendly_path
 from contracts import contract
-from procgraph_ros.bag_utils import read_bag_stats_progress
+from rosbag_utils import read_bag_stats_progress
 from rosstream2boot import logger
 from rosstream2boot.config import set_rs2b_config
 from rosstream2boot.programs.rs2b import RS2BCmd, RS2Bsub

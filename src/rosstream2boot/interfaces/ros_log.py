@@ -1,7 +1,7 @@
 from .. import logger
 from abc import abstractmethod, ABCMeta
 from contracts import contract
-from procgraph_ros.bag_utils import read_bag_stats
+from rosbag_utils import read_bag_stats
 from rosstream2boot.config.rbconfig import get_rs2b_config
 
 

@@ -1,30 +1,34 @@
 from .. import logger
-from bootstrapping_olympics.interfaces.boot_spec import BootSpec
-from bootstrapping_olympics.interfaces.robot import (RobotObservations, PassiveRobotInterface,
-    EpisodeDesc)
+from bootstrapping_olympics import BootSpec
+from bootstrapping_olympics.interfaces.robot import (RobotObservations,
+    PassiveRobotInterface, EpisodeDesc)
+from bootstrapping_olympics.utils import unique_timestamp_string
 from contracts import contract
-from procgraph_ros.bag_utils import read_bag_stats_progress
-from rosstream2boot.config.rbconfig import get_rs2b_config
-from rosstream2boot.interfaces.ros_log import ExperimentLog
-from rosstream2boot.interfaces.ros_robot_adapter import ROSRobotAdapter
+from ros_node_utils import ROSNode
+from rosbag_utils import read_bag_stats, read_bag_stats_progress, rosbag_info, resolve_topics
+from rospy import ROSException
 from rospy.rostime import Time
-from ros_node_utils.nodes.ros_node import ROSNode
+from rosstream2boot import ROSRobotAdapter
+from rosstream2boot.config.rbconfig import get_rs2b_config
+from rosstream2boot.interfaces import ExperimentLog
 import Queue
 import warnings
-from bootstrapping_olympics.utils.dates import unique_timestamp_string
-from rospy.exceptions import ROSException
+
    
 class ROSRobot(PassiveRobotInterface, ROSNode):
+    """
     
+        self.asked: list of topics asked; might include "*"
+        self.resolved: list of topics resolved
+        self.resolved2asked: map between the two
+        
+        self.topic2last: last message
+    """
     @contract(adapter=ROSRobotAdapter)
     def __init__(self, adapter):
         ROSNode.__init__(self)
         self.adapter = adapter
         self.iterator = None
-        self.topics = [name for name, _ 
-                       in self.adapter.get_relevant_topics()]  
-        # Topic to last message
-        self.topic2last = {}
         
     @contract(returns=BootSpec)
     def get_spec(self):
@@ -34,17 +38,18 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
     def get_observations(self):
         self.make_sure_initialized()
         try:
-            topic, msg, t, ros_extra = self.iterator()  # @UnusedVariable
+            topic, msg, t, _ = self.iterator()  
         except RobotObservations.NotReady:
             raise
         except StopIteration:
             raise RobotObservations.Finished()
         
-        self.topic2last[topic] = msg
-        if len(self.topic2last) != len(self.topics):
+        asked = self.resolved2asked[topic]
+        self.topic2last[asked] = msg
+        if len(self.topic2last) != len(self.resolved):
             raise RobotObservations.NotReady()
         
-        obs = self.adapter.get_observations(self.topic2last, topic, msg, t)
+        obs = self.adapter.get_observations(self.topic2last, asked, msg, t)
         if obs is None:
             raise RobotObservations.NotReady()
             
@@ -56,18 +61,38 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         _, adapter = rs2b_config.adapters.instance_smarter(adapter)
         return ROSRobot(adapter)
 
-    # public interface
-    @contract(explog=ExperimentLog)
-    def read_from_log(self, explog):
-        source = explog.read_all(topics=self.topics)
+    def read_from_bag(self, bagfile):
+        bag_info = rosbag_info(bagfile)
+
+        self.asked = [name for name, _ in self.adapter.get_relevant_topics()]
+                  
+        self.resolved = resolve_topics(bag_info, self.asked)
+        
+        self.resolved2asked = {}
+        for a, t in zip(self.asked, self.resolved):
+            self.resolved2asked[t] = a
+        
+        self.info('   asked: %s ' % self.asked)
+        self.info('resolved: %s ' % self.resolved)
+        
+        source = read_bag_stats(bagfile, topics=self.resolved)
         show_progress = read_bag_stats_progress(source, logger, interval=5)
 
+        # Topic to last message
+        self.topic2last = {}
         self.iterator = show_progress.next
+        
+
+    @contract(explog=ExperimentLog)
+    def read_from_log(self, explog):
         self.id_environment = explog.get_id_environment()
+        bagfile = explog.get_bagfile()
+        self.read_from_bag(bagfile)
 
     def connect_to_ros(self):
         """ Connects to the ROS nodes in a live system. """
         import rospy
+        known = [t['topic'] for t in rospy.get_published_topics()]
         warnings.warn('temporary')
         try:
             rospy.init_node('boot_interface', disable_signals=True)
@@ -81,13 +106,13 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
             publisher = rospy.Publisher(topic, data_class, latch=True)
             self.publishers[topic] = publisher
             
-        topics = self.adapter.get_relevant_topics()
         self.queue = Queue.Queue()
         
         def callback(msg, topic):
             what = (topic, msg, Time.now(), {})
             self.queue.put(what)
-
+        
+        topics = self.adapter.get_relevant_topics()
         for topic, data_class in topics:
             self.info('Subscribing to %s' % topic)
             rospy.Subscriber(topic, data_class,
