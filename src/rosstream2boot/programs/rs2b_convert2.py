@@ -162,6 +162,8 @@ def iterate_robot_observations(robot, sleep=0.1):
         try:
             yield robot.get_observations()
         except RobotObservations.NotReady:
+            if sleep >= 0.1:
+                print('sleeping %s' % sleep)
             time.sleep(sleep)
             continue
         except RobotObservations.Finished:

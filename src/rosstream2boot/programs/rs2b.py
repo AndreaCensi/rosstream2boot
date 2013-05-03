@@ -12,7 +12,8 @@ class RS2B(QuickMultiCmdApp):
     
     def define_multicmd_options(self, params):
         params.add_flag('dummy', help='workaround for a bug')
-        params.add_string_list('config', help='Configuration directory')
+        params.add_string_list('config', help='Configuration directory',
+                               default=[])
   
     def initial_setup(self):
         config = get_rs2b_config()

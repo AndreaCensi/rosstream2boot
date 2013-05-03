@@ -1,4 +1,4 @@
-from .cameras import CameraAdapterGray
+from .cameras import CameraAdapterGray, CameraAdapter
 
 from .laserscan import LaserScanAdapter
 from .sensor_join import *

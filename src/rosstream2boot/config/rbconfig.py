@@ -5,7 +5,7 @@ from bootstrapping_olympics.configuration.master import get_boot_config
 
 class RBConfigMaster(ConfigMaster):
     def __init__(self):
-        ConfigMaster.__init__(self, 'ros2boot')
+        ConfigMaster.__init__(self, 'rs2b')
 
         from ..interfaces import (ROSObservationsAdapter, ROSCommandsAdapter,
                                   ROSRobotAdapter, ExperimentLog)

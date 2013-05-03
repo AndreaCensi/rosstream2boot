@@ -69,7 +69,10 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
-        """ Returns the list of topics that are relevant for us. """
+        """ 
+            Returns the list of topics that are relevant for us
+            and we wish to subscribe to.     
+        """
         return self.relevant_topics
 
     @contract(returns='list(tuple(str,*))')    
@@ -87,7 +90,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         return self.cmd_adapter.messages_from_commands(command)
 
     @contract(returns='None|RobotObservations', messages='dict(str:*)')
-    def get_observations(self, messages, last_topic, last_msg, last_t):
+    def get_observations(self, messages, last_topics, last_t):
         """
             messages: topic -> last ROS Message
             returns: an instance of RobotObservations, or None if the update is not ready.
@@ -95,7 +98,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         """
         self.debug_nseen += 1
         
-        if self.is_ready(messages, last_topic, last_msg, last_t):    
+        if self.is_ready(messages, last_topics, last_t):    
             observations = self.obs_adapter.observations_from_messages(messages)
             cmds = self.cmd_adapter.commands_from_messages(messages)
             if cmds is None:
@@ -131,17 +134,20 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         else:
             return None
         
-    def is_ready(self, messages, last_topic, last_msg, last_t):  # @UnusedVariable
+    def is_ready(self, messages, last_topics, last_t):  # @UnusedVariable
         # first check that we have all topics
         for topic, _ in self.relevant_topics:
             if not topic in messages:
+                # print('Topic %r not found' % topic)
                 return False
             
         if self.sync_policy == ROSRobotAdapter.OBS_FIRST_TOPIC:
             sync_topic = self.obs_topics[0][0]
             assert isinstance(sync_topic, str)
-            ready = last_topic == sync_topic
-            # rospy.loginfo('Ready: %s because %r ? %r ' % (ready, last_topic, sync_topic))
+            ready = sync_topic in last_topics
+            if not ready:
+                # print('not ready  because %r ? %r ' % (last_topic, sync_topic))
+                pass
             return ready
         else:
             raise NotImplementedError
