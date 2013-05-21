@@ -5,8 +5,7 @@ from bootstrapping_olympics.utils import unique_timestamp_string
 from contracts import contract
 from ros_node_utils import ROSNode
 from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info,
-    resolve_topics)
-from rosbag_utils.rosbag_flexible_read import topics_in_bag
+    resolve_topics, topics_in_bag)
 from rospy import ROSException
 from rospy.rostime import Time
 from rosstream2boot import ROSRobotAdapter, get_rs2b_config
@@ -30,18 +29,20 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         self.adapter = adapter
         self.iterator = None
         
+        # If true, read_queue() only read once. This is the 
+        # necessary behavior for logs.
+        self.read_one = False
+        
     @contract(returns=BootSpec)
     def get_spec(self):
         return self.adapter.get_spec()
     
     def _read_queue(self):
-        
         read = []
         while True:
             try:
                 topic, msg, t, _ = self.iterator()
                 read.append((topic, msg, t))
-                # self.debug('Got topic %s' % topic)  
             except RobotObservations.NotReady:
                 if not read:
                     raise
@@ -56,12 +57,17 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
             
             self._topic2last[asked] = msg
             
+            # In case of logs; not in case of real data
+            if self.read_one:
+                break
+            
         return read
         
     @contract(returns=RobotObservations)
     def get_observations(self):
         self.make_sure_initialized()
         read = self._read_queue()
+        warnings.warn('might lose interesting packets')
         _, _, last_t = read[-1]
         last_topics = [x[0] for x in read]
         if len(last_topics) >= len(set(last_topics)):
@@ -95,6 +101,7 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         # Topic to last message
         self._topic2last = {}
         self.iterator = show_progress.next
+        self.read_one = True
         
     def _match_topics_with_known(self, known):
         a = self.adapter
@@ -106,7 +113,6 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         self.info('   asked: %s ' % self.asked)
         self.info('resolved: %s ' % self.resolved)
         
-
     @contract(explog=ExperimentLog)
     def read_from_log(self, explog):
         self.id_environment = explog.get_id_environment()

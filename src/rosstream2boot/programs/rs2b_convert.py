@@ -1,15 +1,15 @@
-from bootstrapping_olympics.interfaces.observations import ObsKeeper
-from bootstrapping_olympics.logs.logs_format import LogsFormat
-from bootstrapping_olympics.programs.manager.meat.data_central import (
-    DataCentral)
+from .rs2b import RS2B
+from bootstrapping_olympics.interfaces import ObsKeeper
+from bootstrapping_olympics.logs import LogsFormat
+from bootstrapping_olympics.programs.manager import DataCentral
 from bootstrapping_olympics.utils import safe_makedirs
-from conf_tools.utils.friendly_paths import friendly_path
+from conf_tools.utils import friendly_path
 from contracts import contract
+from quickapp.library.app.quickapp_imp import QuickApp
 from rosbag_utils import read_bag_stats_progress
 from rosstream2boot import logger
-from rosstream2boot.config import set_rs2b_config
-from rosstream2boot.programs.rs2b import RS2BCmd, RS2Bsub
-import os 
+from rosstream2boot.config import get_rs2b_config, set_rs2b_config
+import os
 
 
 class ConvertJob():
@@ -34,8 +34,7 @@ class ConvertJob():
         self.id_episode_prefix = id_episode_prefix
 
 
-@RS2Bsub
-class RS2BConvertBatch(RS2BCmd):
+class RS2BConvertBatch(RS2B.sub, QuickApp):  # @UndefinedVariable
     cmd = 'convert'
     
     def define_options(self, params):
@@ -55,7 +54,7 @@ class RS2BConvertBatch(RS2BCmd):
         self.logger.info('Using root: %s' % boot_root)
         safe_makedirs(boot_root)
         
-        config = self.get_rs2b_config()
+        config = get_rs2b_config()
         self.logger.info('Jobs: %s' % options.jobs)
 
         jobs = config.convert_jobs.expand_names(options.jobs)
@@ -91,10 +90,7 @@ class RS2BConvertBatch(RS2BCmd):
                 check_valid_values=check_valid_values)
 
 
-
-
-@RS2Bsub
-class RS2BConvertOne(RS2BCmd):
+class RS2BConvertOne(RS2B.sub, QuickApp):  # @UndefinedVariable
     cmd = 'convert-one'
     # Assumes parent.get_rs2b_config()
     
@@ -111,7 +107,7 @@ class RS2BConvertOne(RS2BCmd):
     def define_jobs_context(self, context):
         options = self.get_options()
         boot_root = options.boot_root
-        config = self.get_rs2b_config()
+        config = get_rs2b_config()
         data_central = DataCentral(boot_root)
         id_robot = options.id_robot
         id_explog = options.id_explog
