@@ -1,5 +1,5 @@
-from rosstream2boot.config.rbconfig import get_rs2b_config
-from rosstream2boot.programs.rs2b import RS2B
+from rosstream2boot import get_rs2b_config
+from .rs2b import RS2B
 import sys
 
 class List(RS2B.sub):  # @UndefinedVariable

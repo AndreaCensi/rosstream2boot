@@ -1,9 +1,9 @@
-from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
-from bootstrapping_olympics.interfaces.streamels import make_streamels_1D_float
+from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
 from contracts import contract
-from rosstream2boot.interfaces import ROSObservationsAdapter
+from rosstream2boot import ROSObservationsAdapter
 import numpy as np
-from sensor_msgs.msg import LaserScan
+
+__all__ = ['LaserScanAdapter']
 
 
 class LaserScanAdapter(ROSObservationsAdapter):
@@ -20,6 +20,7 @@ class LaserScanAdapter(ROSObservationsAdapter):
     
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
+        from sensor_msgs.msg import LaserScan
         return [(self.topic, LaserScan)]
     
     @contract(returns=StreamSpec)

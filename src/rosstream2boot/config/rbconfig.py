@@ -32,5 +32,4 @@ class RBConfigMaster(ConfigMaster):
 
 
 get_rs2b_config = RBConfigMaster.get_singleton
-set_rs2b_config = RBConfigMaster.set_singleton
 

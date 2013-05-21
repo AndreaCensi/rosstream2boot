@@ -1,10 +1,10 @@
-from bootstrapping_olympics.configuration.master import get_boot_config
-from bootstrapping_olympics.library.robots.equiv_robot import EquivRobot
-from compmake.utils.describe import describe_type
+from bootstrapping_olympics import get_boot_config
+from bootstrapping_olympics.library.robots import EquivRobot
+from bootstrapping_olympics.misc import bd_sequence_from_robot
+from contracts import describe_type
 from procgraph import Block
 from procgraph.block_utils import IteratorGenerator
 from rosstream2boot.library import ROSRobot
-from rosstream2boot.programs.rs2b_convert2 import bd_sequence_from_robot
 import warnings
 
 
@@ -40,8 +40,8 @@ class ROSRobotRead(IteratorGenerator):
         orig_robot.read_from_bag(bagfile)
 
         bd_seq = bd_sequence_from_robot(id_robot, robot, sleep_wait=0,
-                                     id_episode='xxx', id_environment='xxx',
-                                     check_valid_values=False)
+                                        id_episode='xxx', id_environment='xxx',
+                                        check_valid_values=False)
         
         def make_boot_iterator():
             for bd in bd_seq:

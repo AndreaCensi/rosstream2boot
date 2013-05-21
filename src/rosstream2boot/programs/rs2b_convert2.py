@@ -1,23 +1,17 @@
-from bootstrapping_olympics import PassiveRobotInterface
-from bootstrapping_olympics import (set_boot_config,
-    get_boot_config)
-from bootstrapping_olympics.interfaces.observations import ObsKeeper
-from bootstrapping_olympics.library.robots import EquivRobot
-from bootstrapping_olympics.logs import LogsFormat
-from bootstrapping_olympics.misc.interaction import iterate_robot_observations
-from bootstrapping_olympics.programs.manager.meat.data_central import (
-    DataCentral)
-from conf_tools.utils.friendly_paths import friendly_path
-from contracts import contract
-from contracts.interface import describe_type
+from .rs2b import RS2B
+from bootstrapping_olympics import (get_boot_config, ObsKeeper,
+    PassiveRobotInterface, LogsFormat)
+from bootstrapping_olympics.misc import iterate_robot_observations
+from bootstrapping_olympics.programs.manager import DataCentral
+from conf_tools import GlobalConfig
+from conf_tools.utils import friendly_path
+from contracts import contract, describe_type
 from quickapp import QuickApp
-from rosstream2boot import logger
-from rosstream2boot.config import set_rs2b_config
-from rosstream2boot.config.rbconfig import get_rs2b_config
-from rosstream2boot.library.robot_from_bag import ROSRobot
-from rosstream2boot.programs.rs2b import RS2B
+from rosstream2boot import get_rs2b_config, logger
+from rosstream2boot.library import ROSRobot
 import os
 import warnings
+
 
 class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
     cmd = 'convert2'
@@ -52,8 +46,10 @@ class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
                                           id_agent=id_agent,
                                           id_stream=id_stream)
       
+        config_state = GlobalConfig.get_state()
+                
         return context.comp(do_convert_job2,
-                            rs2b_config=rs2b_config, boot_config=boot_config,
+                            config_state=config_state,
                             id_robot=id_robot,
                             id_robot_res=id_robot_res,
                             id_explog=id_explog, id_stream=id_stream,
@@ -61,14 +57,16 @@ class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
                             filename=filename) 
      
 
-def do_convert_job2(rs2b_config, boot_config,
+def do_convert_job2(config_state,
                     id_robot,
                     id_robot_res,
                     id_explog, id_stream, id_episode,
                     filename):
-    set_boot_config(boot_config)
-    set_rs2b_config(rs2b_config)
-
+    
+    GlobalConfig.set_state(config_state)
+    rs2b_config = get_rs2b_config()
+    boot_config = get_boot_config()
+    
     """
         id_robot: original robot must be a ROSRobot
     """
@@ -81,10 +79,7 @@ def do_convert_job2(rs2b_config, boot_config,
     
     explog = rs2b_config.explogs.instance(id_explog)
     robot = boot_config.robots.instance(id_robot)
-
-    inside = robot.get_inner_components()
-    print inside
-    orig_robot = inside[-1]
+    orig_robot = robot.get_inner_components()[-1]
 
     if not isinstance(orig_robot, ROSRobot):
         msg = 'Expected ROSRobot, got %s' % describe_type(robot)
@@ -127,7 +122,8 @@ def write_robot_observations(id_stream, filename, id_robot, robot, id_episode, i
             writer.push_observations(observations=boot_observations,
                                      extra=extra)
         
-        nvalid += 1
+            nvalid += 1
+            
     if nvalid == 0:
         msg = 'No observations could be found in %s' % filename
         raise Exception(msg)

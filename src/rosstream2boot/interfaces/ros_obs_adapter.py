@@ -1,6 +1,6 @@
-from contracts import contract
 from abc import abstractmethod, ABCMeta
-from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
+from bootstrapping_olympics import StreamSpec
+from contracts import contract
 
 
 class ROSObservationsAdapter:

@@ -1,11 +1,9 @@
 from .. import logger
-from bootstrapping_olympics import RobotObservations
-from bootstrapping_olympics import BootSpec
-from contracts import contract
-from geometry import SE3_from_SE2, SE2_from_translation_angle
-from nav_msgs.msg import Odometry
-from rosstream2boot.config import get_rs2b_config
 from abc import ABCMeta, abstractmethod
+from bootstrapping_olympics import BootSpec, RobotObservations
+from contracts import contract
+
+from rosstream2boot import get_rs2b_config
 
 class ROSRobotAdapterInterface:
     __metaclass__ = ABCMeta
@@ -56,6 +54,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         self.obs_topics = self.obs_adapter.get_relevant_topics()
         self.cmd_topics = self.cmd_adapter.get_relevant_topics()
         
+        from nav_msgs.msg import Odometry
         self.use_odom_topic = use_odom_topic
         if use_odom_topic:
             self.odom_topic = '/odom'
@@ -122,6 +121,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
                 x = ros_pose.position.x
                 y = ros_pose.position.y
                 theta = ros_pose.orientation.z
+                from geometry import SE3_from_SE2, SE2_from_translation_angle
                 robot_pose = SE3_from_SE2(SE2_from_translation_angle([x, y], theta))
             else:
                 robot_pose = None

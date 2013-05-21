@@ -1,7 +1,10 @@
-from bootstrapping_olympics.configuration import get_boot_config
-from bootstrapping_olympics.interfaces import RepresentationNuisance, StreamSpec
+from bootstrapping_olympics import (RepresentationNuisance, StreamSpec,
+    get_boot_config)
 from contracts import contract
-from rosstream2boot.interfaces import ROSObservationsAdapter
+from rosstream2boot import ROSObservationsAdapter
+
+
+__all__ = ['ROSObservationsAdapterNuisance']
 
 
 class ROSObservationsAdapterNuisance(ROSObservationsAdapter):

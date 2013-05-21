@@ -10,7 +10,10 @@ import warnings
 
 class ROSRobotAdapterNode(ROSNode):
     
-    """ 
+    """
+    
+        Deprecated --- Use RosRobot
+        
         This node provides online BootObservations 
         according to a ROSRobotAdapter.
         

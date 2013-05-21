@@ -1,11 +1,11 @@
-from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
-from bootstrapping_olympics.interfaces.streamels import make_streamels_1D_float
-from rosstream2boot.interfaces import ROSCommandsAdapter
+from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
+from contracts import contract
+from rosstream2boot import ROSCommandsAdapter
 import numpy as np
 import warnings
 
-from geometry_msgs.msg import Twist
-from contracts import contract
+
+__all__ = ['TwistAdapterXY']
 
 class TwistAdapterXY(ROSCommandsAdapter):
     """ 
@@ -20,9 +20,11 @@ class TwistAdapterXY(ROSCommandsAdapter):
         self.max_lin_vel = max_lin_vel
         
     def get_relevant_topics(self):
+        from geometry_msgs.msg import Twist
         return [(self.topic, Twist)]
 
     def get_published_topics(self):
+        from geometry_msgs.msg import Twist
         return [(self.topic_out, Twist)]
     
     def get_stream_spec(self):        
@@ -56,6 +58,7 @@ class TwistAdapterXY(ROSCommandsAdapter):
     @contract(returns='dict(str:*)', commands='array[2]')
     def messages_from_commands(self, commands):
         assert commands.size == 2
+        from geometry_msgs.msg import Twist
         msg = Twist()
     
         msg.linear.x = commands[0] * self.max_lin_vel

@@ -1,6 +1,6 @@
 from conf_tools import GlobalConfig
 from quickapp import QuickMultiCmdApp
-from rosstream2boot.config import get_rs2b_config
+from rosstream2boot import get_rs2b_config
 
 
 class RS2B(QuickMultiCmdApp):

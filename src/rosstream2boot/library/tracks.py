@@ -1,9 +1,8 @@
-from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
-from bootstrapping_olympics.interfaces.streamels import make_streamels_1D_float
-from rosstream2boot.interfaces import ROSCommandsAdapter
+from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
+from contracts import contract
+from rosstream2boot import ROSCommandsAdapter
 import numpy as np
 
-from contracts import contract
 
 __all__ = ['TracksAdapter']
 

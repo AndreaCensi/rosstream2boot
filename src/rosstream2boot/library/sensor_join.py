@@ -1,9 +1,9 @@
-from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
+from bootstrapping_olympics import StreamSpec
 from contracts import contract
-from rosstream2boot.config.rbconfig import get_rs2b_config
-from rosstream2boot.interfaces import ROSObservationsAdapter
+from rosstream2boot import ROSObservationsAdapter, get_rs2b_config
 import numpy as np
 
+__all__ = ['SensorJoin']
 
 class SensorJoin(ROSObservationsAdapter):
     """ Joins two sensors in a unique observation vector. """
