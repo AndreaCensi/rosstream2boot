@@ -1,8 +1,7 @@
-from .. import logger
+from rosstream2boot import logger
 from abc import abstractmethod, ABCMeta
 from contracts import contract
 from rosbag_utils import read_bag_stats
-from rosstream2boot import get_rs2b_config
 
 
 class ExperimentLog:
@@ -76,29 +75,29 @@ class ExpLogFromYaml(ExperimentLog):
 #         self.duration = duration
 #         
 #         self.log = get_rs2b_config().explogs  # XXX
-
-
-class MultiLog(ExperimentLog):
-    
-    def __init__(self, logs):
-        config = get_rs2b_config()
-        
-        logs = config.explogs.expand_names(logs)
-        self.logs = []
-        
-        for id_log in logs:
-            log = config.explogs.instance(id_log)
-            self.logs.append(log)
-
-    def get_id_environment(self):
-        raise NotImplementedError()
-    
-    def read_all(self, topics):
-        for l in self.logs:
-            # Change episode?
-            for m in l.read_all(topics):
-                yield m
-                
+# 
+# 
+# class MultiLog(ExperimentLog):
+#     
+#     def __init__(self, logs):
+#         config = get_rs2b_config()
+#         
+#         logs = config.explogs.expand_names(logs)
+#         self.logs = []
+#         
+#         for id_log in logs:
+#             log = config.explogs.instance(id_log)
+#             self.logs.append(log)
+# 
+#     def get_id_environment(self):
+#         raise NotImplementedError()
+#     
+#     def read_all(self, topics):
+#         for l in self.logs:
+#             # Change episode?
+#             for m in l.read_all(topics):
+#                 yield m
+#                 
                 
                 
                  

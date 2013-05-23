@@ -1,5 +1,8 @@
 from . import JointVelocities, JointValue, JointPositions
 
+__all__ = ['get_joint_position_msg', 'get_joint_velocity_msg']
+
+
 def get_joint_velocity_msg(array, timeStamp=None):
     '''
     

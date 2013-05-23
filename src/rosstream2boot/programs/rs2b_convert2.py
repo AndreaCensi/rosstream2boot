@@ -17,10 +17,10 @@ class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
     cmd = 'convert2'
     
     def define_options(self, params):
-        params.add_required_string('boot_root')
-        params.add_required_string('id_explog')
-        params.add_required_string('id_robot', help='This should be a LoggedRobot')
-        params.add_required_string('id_robot_res')
+        params.add_string('boot_root')
+        params.add_string('id_explog')
+        params.add_string('id_robot', help='This should be a LoggedRobot')
+        params.add_string('id_robot_res')
 
         params.add_string('id_episode_prefix', default='')
         

@@ -7,6 +7,7 @@ from procgraph.block_utils import IteratorGenerator
 from rosstream2boot.library import ROSRobot
 import warnings
 
+__all__ = ['ROSRobotRead']
 
 class ROSRobotRead(IteratorGenerator):
     ''' 

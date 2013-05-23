@@ -2,6 +2,7 @@ from conf_tools import GlobalConfig
 from quickapp import QuickMultiCmdApp
 from rosstream2boot import get_rs2b_config
 
+__all__ = ['RS2B', 'main_rs2b']
 
 class RS2B(QuickMultiCmdApp):
     
@@ -22,3 +23,4 @@ class RS2B(QuickMultiCmdApp):
  
 
 
+main_rs2b = RS2B.get_sys_main()

@@ -21,11 +21,7 @@ class RBConfigMaster(ConfigMaster):
                                                    '*.cmd_adapters.yaml',
                                                    ROSCommandsAdapter)
 
-        # from rosstream2boot.programs import ConvertJob
-#         self.convert_jobs = self.add_class_generic('convert_jobs',
-#                                                    '*.convert_jobs.yaml',
-#                                                    ConvertJob)
-        
+  
     def get_default_dir(self):
         from pkg_resources import resource_filename  # @UnresolvedImport
         return resource_filename("rosstream2boot", "configs")

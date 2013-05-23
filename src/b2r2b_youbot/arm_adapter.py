@@ -1,18 +1,16 @@
-from bootstrapping_olympics.interfaces.stream_spec import StreamSpec
-from bootstrapping_olympics.interfaces.streamels import make_streamels_1D_float
+from . import JointVelocities, JointPositions, JointState
+from .message import get_joint_velocity_msg, get_joint_position_msg
+from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
 from contracts import contract
-from rosstream2boot.interfaces import ROSCommandsAdapter
+from rosstream2boot import ROSCommandsAdapter
 import numpy as np
 import warnings
-from  sensor_msgs.msg import JointState
 
-from b2r2b_youbot.message import get_joint_velocity_msg, get_joint_position_msg
-
-from . import JointVelocities, JointPositions 
 
 names = ['arm_joint_1', 'arm_joint_2', 'arm_joint_3', 'arm_joint_4',
          'arm_joint_5']
 
+__all__ = ['YoubotArm']
 
 class YoubotArm(ROSCommandsAdapter):
     
