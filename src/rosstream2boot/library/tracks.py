@@ -2,7 +2,9 @@ from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
 from contracts import contract
 from rosstream2boot import ROSCommandsAdapter
 import numpy as np
-
+import traceback
+from conf_tools.utils.indent_string import indent
+from rosstream2boot import logger
 
 __all__ = ['TracksAdapter']
 
@@ -18,10 +20,17 @@ class TracksAdapter(ROSCommandsAdapter):
         self._data_class = None
    
     def _get_data_class(self):
+        """ Tries to load the data class """
         if self._data_class is None:
             import roslib
-            roslib.load_manifest('landroid_murraylab')  # @IgnorePep8
-            from landroid_murraylab.msg import ldr_tracks  # @UnresolvedImport
+            try:
+                roslib.load_manifest('landroid_murraylab')  # @IgnorePep8
+                from landroid_murraylab.msg import ldr_tracks  # @UnresolvedImport
+            except Exception as e:
+                msg = 'Could not import "ldr_tracks" datatype: %s' % e
+                msg += indent(traceback.format_exc(e), '> ')
+                logger.warn(msg)
+                ldr_tracks = None
             self._data_class = ldr_tracks
         return self._data_class
             

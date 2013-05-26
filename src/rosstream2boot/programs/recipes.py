@@ -1,6 +1,7 @@
 from quickapp import ResourceManager
-from bootstrapping_olympics import get_boot_config
 from .rs2b_convert2 import RS2BConvert2
+
+__all__ = ['recipe_episodeready_by_convert2']
 
 
 def recipe_episodeready_by_convert2(context, boot_root, id_robot):
@@ -15,8 +16,8 @@ def recipe_episodeready_by_convert2(context, boot_root, id_robot):
                    (my_id_robot, id_robot))
             raise ResourceManager.CannotProvide(msg)
         id_explog = id_episode
-        boot_config = get_boot_config()
-        boot_config.robots.instance(id_robot)
+        # boot_config = get_boot_config()
+        # boot_config.robots.instance(id_robot)
         return c.subtask(RS2BConvert2,
                            boot_root=boot_root,
                            id_explog=id_explog,

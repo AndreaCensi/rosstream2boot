@@ -3,8 +3,7 @@ from bootstrapping_olympics import (get_boot_config, ObsKeeper,
     PassiveRobotInterface, LogsFormat)
 from bootstrapping_olympics.misc import iterate_robot_observations
 from bootstrapping_olympics.programs.manager import DataCentral
-from conf_tools import GlobalConfig
-from conf_tools.utils import friendly_path
+from conf_tools import friendly_path
 from contracts import contract, describe_type
 from quickapp import QuickApp
 from rosstream2boot import get_rs2b_config, logger
@@ -12,6 +11,7 @@ from rosstream2boot.library import ROSRobot
 import os
 import warnings
 
+__all__ = ['RS2BConvert2']
 
 class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
     cmd = 'convert2'
@@ -46,10 +46,7 @@ class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
                                           id_agent=id_agent,
                                           id_stream=id_stream)
       
-        config_state = GlobalConfig.get_state()
-                
-        return context.comp(do_convert_job2,
-                            config_state=config_state,
+        return context.comp_config(do_convert_job2,
                             id_robot=id_robot,
                             id_robot_res=id_robot_res,
                             id_explog=id_explog, id_stream=id_stream,
@@ -57,13 +54,11 @@ class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
                             filename=filename) 
      
 
-def do_convert_job2(config_state,
-                    id_robot,
+def do_convert_job2(id_robot,
                     id_robot_res,
                     id_explog, id_stream, id_episode,
                     filename):
     
-    GlobalConfig.set_state(config_state)
     rs2b_config = get_rs2b_config()
     boot_config = get_boot_config()
     
@@ -106,6 +101,7 @@ def write_robot_observations(id_stream, filename, id_robot, robot, id_episode, i
     with logs_format.write_stream(filename=filename, id_stream=id_stream,
                                   boot_spec=boot_spec) as writer:
         for obs in iterate_robot_observations(robot, sleep=0):
+            # print('robot_pose: %s' % obs.robot_pose)
             # print('got %s' % obs['timestamp'])
             boot_observations = keeper.push(timestamp=obs.timestamp,
                                             observations=obs.observations,

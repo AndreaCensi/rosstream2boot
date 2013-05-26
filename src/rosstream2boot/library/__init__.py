@@ -8,7 +8,7 @@ from .twist_xy import *
 from .twist import *
 from .tracks import *
 
-from .robot_from_bag import *
+from .ros_robot import *
 
 from ..interfaces import ROSRobotAdapter  # XXX
 

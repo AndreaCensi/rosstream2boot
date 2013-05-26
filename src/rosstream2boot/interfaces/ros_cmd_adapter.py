@@ -2,8 +2,10 @@ from abc import abstractmethod, ABCMeta
 from bootstrapping_olympics import StreamSpec
 from contracts import contract
 
+__all__ = ['ROSCommandsAdapter']
 
-class ROSCommandsAdapter():
+
+class ROSCommandsAdapter(object):
     __metaclass__ = ABCMeta
 
     @contract(returns='list(tuple(str,*))')    
@@ -27,6 +29,7 @@ class ROSCommandsAdapter():
         ''' Returns the sensorimotor spec for this robot
             (a BootSpec object). '''
     
+    
     @abstractmethod
     @contract(messages='dict(str:*)', returns='tuple(str,array)')
     def commands_from_messages(self, messages):
@@ -34,7 +37,7 @@ class ROSCommandsAdapter():
             Converts the ROS topics listed here to a numpy array.
             Returns commands_source (name of agent), array.
         """
-
+        
     @abstractmethod
     @contract(returns='dict(str:*)', commands='array')
     def messages_from_commands(self, commands):

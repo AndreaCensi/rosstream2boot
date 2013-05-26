@@ -1,4 +1,3 @@
-from .. import logger
 from bootstrapping_olympics import (RobotObservations, PassiveRobotInterface,
     EpisodeDesc, BootSpec)
 from bootstrapping_olympics.utils import unique_timestamp_string
@@ -6,14 +5,13 @@ from contracts import contract
 from ros_node_utils import ROSNode
 from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info,
     resolve_topics, topics_in_bag)
-from rospy import ROSException
-from rospy.rostime import Time
-from rosstream2boot import ROSRobotAdapter, get_rs2b_config
-from rosstream2boot.interfaces import ExperimentLog
+from rosstream2boot import (ExperimentLog, logger, ROSRobotAdapter,
+    get_rs2b_config)
 import Queue
 import warnings
 
-   
+__all__ = ['ROSRobot']
+
 class ROSRobot(PassiveRobotInterface, ROSNode):
     """
     
@@ -122,6 +120,8 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
     def connect_to_ros(self):
         """ Connects to the ROS nodes in a live system. """
         import rospy
+        from rospy.exceptions import ROSException
+        from rospy.rostime import Time
         
         known = [name for name, _ in rospy.get_published_topics()]
         self._match_topics_with_known(known)

@@ -2,8 +2,9 @@ from abc import abstractmethod, ABCMeta
 from bootstrapping_olympics import StreamSpec
 from contracts import contract
 
+__all__ = ['ROSObservationsAdapter']
 
-class ROSObservationsAdapter:
+class ROSObservationsAdapter(object):
     __metaclass__ = ABCMeta
 
     @contract(returns='list(tuple(str,*))')    

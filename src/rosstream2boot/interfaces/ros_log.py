@@ -3,8 +3,10 @@ from abc import abstractmethod, ABCMeta
 from contracts import contract
 from rosbag_utils import read_bag_stats
 
+__all__ = ['ExperimentLog', 'ExpLogFromYaml']
 
-class ExperimentLog:
+
+class ExperimentLog(object):
     __metaclass__ = ABCMeta
     
     @abstractmethod

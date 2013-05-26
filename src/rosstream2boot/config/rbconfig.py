@@ -1,5 +1,7 @@
 from conf_tools import ConfigMaster
 
+__all__ = ['get_rs2b_config']
+
 class RBConfigMaster(ConfigMaster):
     def __init__(self):
         ConfigMaster.__init__(self, 'rs2b')

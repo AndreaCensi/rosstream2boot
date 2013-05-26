@@ -1,11 +1,13 @@
-from .. import logger
+from rosstream2boot import logger
 from abc import ABCMeta, abstractmethod
 from bootstrapping_olympics import BootSpec, RobotObservations
 from contracts import contract
 
 from rosstream2boot import get_rs2b_config
 
-class ROSRobotAdapterInterface:
+__all__ = ['ROSRobotAdapterInterface', 'ROSRobotAdapter']
+
+class ROSRobotAdapterInterface(object):
     __metaclass__ = ABCMeta
     
     @abstractmethod
@@ -153,10 +155,10 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
             raise NotImplementedError
  
     @staticmethod
-    def from_yaml(obs_adapter, cmd_adapter, sync):
+    def from_yaml(obs_adapter, cmd_adapter, **other):
         config = get_rs2b_config()
         _, obs_adapter = config.obs_adapters.instance_smarter(obs_adapter)
         _, cmd_adapter = config.cmd_adapters.instance_smarter(cmd_adapter)
-        return ROSRobotAdapter(obs_adapter, cmd_adapter, sync)
+        return ROSRobotAdapter(obs_adapter, cmd_adapter, **other)
 
     
