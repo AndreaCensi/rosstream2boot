@@ -1,12 +1,12 @@
-from abc import abstractmethod, ABCMeta
+from abc import abstractmethod
 from bootstrapping_olympics import StreamSpec
-from contracts import contract
+from contracts import contract, ContractsMeta
 
 __all__ = ['ROSCommandsAdapter']
 
 
 class ROSCommandsAdapter(object):
-    __metaclass__ = ABCMeta
+    __metaclass__ = ContractsMeta
 
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):

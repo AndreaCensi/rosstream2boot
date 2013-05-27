@@ -1,14 +1,14 @@
 from rosstream2boot import logger
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from bootstrapping_olympics import BootSpec, RobotObservations
-from contracts import contract
+from contracts import contract, ContractsMeta
 
 from rosstream2boot import get_rs2b_config
 
 __all__ = ['ROSRobotAdapterInterface', 'ROSRobotAdapter']
 
 class ROSRobotAdapterInterface(object):
-    __metaclass__ = ABCMeta
+    __metaclass__ = ContractsMeta
     
     @abstractmethod
     @contract(returns='list(tuple(str,*))')    

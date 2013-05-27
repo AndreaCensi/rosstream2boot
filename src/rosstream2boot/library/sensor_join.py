@@ -49,8 +49,8 @@ def join_arrays(x):
     if x[0].ndim == 1:
         return np.hstack(x)
     elif x[0].ndim == 2:
-        raise NotImplemented()
+        raise NotImplementedError()
     else:
-        raise NotImplemented()
+        raise NotImplementedError()
         
                 

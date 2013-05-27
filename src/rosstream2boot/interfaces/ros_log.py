@@ -1,13 +1,13 @@
 from rosstream2boot import logger
-from abc import abstractmethod, ABCMeta
-from contracts import contract
+from abc import abstractmethod
+from contracts import contract, ContractsMeta
 from rosbag_utils import read_bag_stats
 
 __all__ = ['ExperimentLog', 'ExpLogFromYaml']
 
 
 class ExperimentLog(object):
-    __metaclass__ = ABCMeta
+    __metaclass__ = ContractsMeta
     
     @abstractmethod
     def read_all(self, topics):

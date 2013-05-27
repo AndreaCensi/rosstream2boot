@@ -1,12 +1,15 @@
 from conf_tools import ConfigMaster
 
-__all__ = ['get_rs2b_config']
+__all__ = ['get_rs2b_config', 'get_conftools_cmd_adapters',
+           'get_conftools_obs_adapters',
+           'get_conftools_robot_adapters',
+           'get_conftools_explogs']
 
 class RBConfigMaster(ConfigMaster):
     def __init__(self):
         ConfigMaster.__init__(self, 'rs2b')
 
-        from ..interfaces import (ROSObservationsAdapter, ROSCommandsAdapter,
+        from rosstream2boot import (ROSObservationsAdapter, ROSCommandsAdapter,
                                   ROSRobotAdapter, ExperimentLog)
         
         self.explogs = self.add_class_generic('explogs', '*.explogs.yaml', ExperimentLog)
@@ -31,3 +34,15 @@ class RBConfigMaster(ConfigMaster):
 
 get_rs2b_config = RBConfigMaster.get_singleton
 
+
+def get_conftools_robot_adapters():
+    return get_rs2b_config().adapters
+
+def get_conftools_obs_adapters():
+    return get_rs2b_config().obs_adapters
+
+def get_conftools_cmd_adapters():
+    return get_rs2b_config().cmd_adapters
+
+def get_conftools_explogs():
+    return get_rs2b_config().explogs
