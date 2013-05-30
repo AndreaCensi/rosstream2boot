@@ -3,7 +3,6 @@ from bootstrapping_olympics import (StreamSpec, make_streamels_2D_float,
 from contracts import contract
 from procgraph_images import rgb2gray
 from procgraph_pil import resize
-from procgraph_ros.conversions import ros2rgb
 from rosstream2boot import ROSObservationsAdapter
 import numpy as np
 
@@ -30,6 +29,8 @@ class CameraAdapterGray(ROSObservationsAdapter):
     @contract(messages='dict(str:*)')
     def observations_from_messages(self, messages):
         """ Converts the topics listed here to a class of XX """
+        from procgraph_ros.conversions import ros2rgb  # XXX
+
         msg = messages[self.topic]
         rgb = ros2rgb(msg)
         rgb2 = resize(rgb, width=self.shape[1], height=self.shape[0]) 
@@ -63,6 +64,7 @@ class CameraAdapter(ROSObservationsAdapter):
     @contract(messages='dict(str:*)')
     def observations_from_messages(self, messages):
         """ Converts the topics listed here to a class of XX """
+        from procgraph_ros.conversions import ros2rgb
         msg = messages[self.topic]
         rgb = ros2rgb(msg)       
         rgb2 = resize(rgb, width=self.shape[1], height=self.shape[0])

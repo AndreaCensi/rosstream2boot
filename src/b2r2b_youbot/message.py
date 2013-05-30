@@ -1,4 +1,5 @@
-from . import JointVelocities, JointValue, JointPositions
+from b2r2b_youbot import get_JointVelocities, get_JointValue, get_JointPositions
+
 
 __all__ = ['get_joint_position_msg', 'get_joint_velocity_msg']
 
@@ -8,6 +9,8 @@ def get_joint_velocity_msg(array, timeStamp=None):
     
     :param array:    float array with values to the joints
     '''
+    JointVelocities = get_JointVelocities()
+    JointValue = get_JointValue()
     
     num_joints = len(array)
     
@@ -35,6 +38,8 @@ def get_joint_position_msg(array, timeStamp=None):
     
     :param array:    float array with values to the joints
     '''
+    JointPositions = get_JointPositions()
+    JointValue = get_JointValue()
     
     num_joints = len(array)
     

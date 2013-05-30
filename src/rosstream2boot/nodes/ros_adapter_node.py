@@ -1,11 +1,10 @@
-import rospy
 from contracts import contract
-from rosstream2boot.interfaces import ROSRobotAdapter
+from rosstream2boot import ROSRobotAdapter
 from ros_node_utils.nodes.ros_node import ROSNode
-from rospy.rostime import Time
-from std_msgs.msg import String
 from bootstrapping_olympics.interfaces.observations import ObsKeeper
 import warnings
+
+__all__ = ['ROSRobotAdapterNode']
 
 
 class ROSRobotAdapterNode(ROSNode):
@@ -39,19 +38,24 @@ class ROSRobotAdapterNode(ROSNode):
         
         self.init_messages_subscribers()
         self.init_messages_publishers()
-                
+        
+        import rospy
+        from std_msgs.msg import String
         self.pub_ready = rospy.Publisher('~boot_observations_ready', String)
 
     def init_messages_subscribers(self):
         # list of tuples (topic, data_class)
         topics = self.adapter.get_relevant_topics()
         
+        import rospy
+
         for topic, data_class in topics:
             self.info('Subscribing to %s' % topic)
             rospy.Subscriber(topic, data_class,
                              self.callback, callback_args=topic)
 
     def init_messages_publishers(self):
+        import rospy
         self.publishers = {}
         pub_topics = self.adapter.get_published_topics()
         for topic, data_class in pub_topics:
@@ -63,6 +67,7 @@ class ROSRobotAdapterNode(ROSNode):
         if not topic in self.topic2message:
             self.info('Received first %s' % topic)
         self.topic2message[topic] = msg
+        from rospy.rostime import Time
         self.check_ready(topic, msg, Time.now())
         
     def check_ready(self, last_topic, last_msg, last_t):
@@ -88,6 +93,7 @@ class ROSRobotAdapterNode(ROSNode):
             
             msg = 'BootObservations ready (buf: %s)' % len(self.buffer)
             # self.info(msg)
+            from std_msgs.msg import String
             self.pub_ready.publish(String(msg))
             
             if self.counter == 0:
@@ -96,6 +102,8 @@ class ROSRobotAdapterNode(ROSNode):
 
     def obs_callback(self, callback):
         """ Gives a callback to be called when boot observations are ready """
+        from std_msgs.msg import String
+        import rospy
         rospy.Subscriber('~boot_observations_ready', String, callback)
             
     @contract(returns='list')

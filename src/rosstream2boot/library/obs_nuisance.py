@@ -35,7 +35,7 @@ class ROSObservationsAdapterNuisance(ROSObservationsAdapter):
     # XXX: bug with contracts
     @staticmethod
     def from_yaml(id_adapter, id_nuisance):
-        from rosstream2boot.config import get_rs2b_config
+        from rosstream2boot import get_rs2b_config
         adapter = get_rs2b_config().obs_adapters.instance(id_adapter)
         nuisance = get_boot_config().nuisances.instance(id_nuisance)  
         return ROSObservationsAdapterNuisance(adapter, nuisance)

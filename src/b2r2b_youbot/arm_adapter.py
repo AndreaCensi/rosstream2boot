@@ -1,10 +1,10 @@
-from . import JointVelocities, JointPositions, JointState
 from .message import get_joint_velocity_msg, get_joint_position_msg
 from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
 from contracts import contract
 from rosstream2boot import ROSCommandsAdapter
 import numpy as np
 import warnings
+from b2r2b_youbot import get_JointVelocities, get_JointPositions
 
 
 names = ['arm_joint_1', 'arm_joint_2', 'arm_joint_3', 'arm_joint_4',
@@ -42,11 +42,14 @@ class YoubotArm(ROSCommandsAdapter):
                 raise ValueError(msg)
         
     def get_relevant_topics(self):
+        from sensor_msgs.msg import JointState
         t = []
         t += [(self.topic_joint_state, JointState)]
         return t
 
     def get_published_topics(self):
+        JointPositions = get_JointPositions()
+        JointVelocities = get_JointVelocities()
         t = []
         t += [(self.topic_vel_cmd, JointVelocities)]
         t += [(self.topic_pos_cmd, JointPositions)]
