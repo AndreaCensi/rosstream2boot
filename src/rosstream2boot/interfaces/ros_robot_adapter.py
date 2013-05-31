@@ -1,9 +1,11 @@
-from rosstream2boot import logger
 from abc import abstractmethod
 from bootstrapping_olympics import BootSpec, RobotObservations
 from contracts import contract, ContractsMeta
+from geometry import (SE3, SE3_from_rotation_translation, SE2_from_SE3,
+    translation_from_SE2, rotation_from_quaternion)
+from rosstream2boot import get_rs2b_config, logger
+import numpy as np
 
-from rosstream2boot import get_rs2b_config
 
 __all__ = ['ROSRobotAdapterInterface', 'ROSRobotAdapter']
 
@@ -30,10 +32,12 @@ class ROSRobotAdapterInterface(object):
         """ Returns a dictionary string -> Message """
         pass
 
-    @contract(returns='None|RobotObservations', messages='dict(str:*)')
-    def get_observations(self, messages, last_topic, last_msg, last_t):
+    @contract(returns='None|RobotObservations', messages='dict(str:*)',
+              queue='list(tuple(*,*,*))')
+    def get_observations(self, messages, queue):
         """
-            messages: topic -> last ROS Message
+            messages: topic -> last ROS Message received for the topic
+            queue: all messages read recently
             returns: an instance of RobotObservations, or None if the update is not ready.            
         """
         pass
@@ -43,7 +47,8 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
     
     OBS_FIRST_TOPIC = 'obs-first-topic'
     
-    def __init__(self, obs_adapter, cmd_adapter, sync, use_odom_topic=False):
+    def __init__(self, obs_adapter, cmd_adapter, sync, use_odom_topic=False,
+                 use_tf=True):
         self.obs_adapter = obs_adapter
         self.cmd_adapter = cmd_adapter
         self.obs_spec = self.obs_adapter.get_stream_spec()
@@ -57,16 +62,26 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         self.cmd_topics = self.cmd_adapter.get_relevant_topics()
         
         from nav_msgs.msg import Odometry
+        
+        self.my_topics = []
+        
         self.use_odom_topic = use_odom_topic
         if use_odom_topic:
             self.odom_topic = '/odom'
-            self.my_topics = [(self.odom_topic, Odometry)]
-        else:
-            self.my_topics = []
+            self.my_topics.append((self.odom_topic, Odometry))
+            self.prev_odom = None
+            
+        self.use_tf = use_tf
+        if self.use_tf:
+            self.tfreader = TFReader()
+            self.my_topics.append(('/tf', None))
+            
         self.relevant_topics = self.obs_topics + self.cmd_topics + self.my_topics
         
         self.debug_nseen = 0
         self.debug_nskipped = 0
+        
+        
         
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
@@ -90,8 +105,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         """ Returns a dictionary string -> Message """
         return self.cmd_adapter.messages_from_commands(command)
 
-    @contract(returns='None|RobotObservations', messages='dict(str:*)')
-    def get_observations(self, messages, last_topics, last_t):
+    def get_observations(self, messages, queue):
         """
             messages: topic -> last ROS Message
             returns: an instance of RobotObservations, or None if the update is not ready.
@@ -99,7 +113,15 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         """
         self.debug_nseen += 1
         
-        if self.is_ready(messages, last_topics, last_t):    
+        if self.use_tf:
+            for topic, msg, _ in queue:
+                if topic == '/tf':
+                    pose = self.tfreader.update(msg)
+                    if pose is not None:
+                        robot_pose = pose
+                
+                
+        if self.is_ready(messages, queue):    
             observations = self.obs_adapter.observations_from_messages(messages)
             cmds = self.cmd_adapter.commands_from_messages(messages)
             if cmds is None:
@@ -115,7 +137,10 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
             
             commands_source, commands = cmds
             episode_end = False
+            _, _, last_t = queue[-1]
             timestamp = last_t.to_sec()
+            
+            robot_pose = None
             
             if self.use_odom_topic:
                 odometry = messages[self.odom_topic]
@@ -125,8 +150,16 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
                 theta = ros_pose.orientation.z
                 from geometry import SE3_from_SE2, SE2_from_translation_angle
                 robot_pose = SE3_from_SE2(SE2_from_translation_angle([x, y], theta))
-            else:
-                robot_pose = None
+                # print('odom: %s' % SE2.friendly(SE2_from_SE3(robot_pose)))
+
+                if self.prev_odom is not None:
+                    delta = SE3.multiply(SE3.inverse(self.prev_odom), robot_pose)
+                    # print('odom delta: %s' % SE2.friendly(SE2_from_SE3(delta)))
+       
+                self.prev_odom = robot_pose
+            
+            if self.use_tf:
+                robot_pose = self.tfreader.get_pose()
             
             return RobotObservations(timestamp=timestamp,
                                      observations=observations,
@@ -136,7 +169,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         else:
             return None
         
-    def is_ready(self, messages, last_topics, last_t):  # @UnusedVariable
+    def is_ready(self, messages, queue):  # @UnusedVariable
         # first check that we have all topics
         for topic, _ in self.relevant_topics:
             if not topic in messages:
@@ -146,6 +179,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         if self.sync_policy == ROSRobotAdapter.OBS_FIRST_TOPIC:
             sync_topic = self.obs_topics[0][0]
             assert isinstance(sync_topic, str)
+            last_topics = [x[0] for x in queue]
             ready = sync_topic in last_topics
             if not ready:
                 # print('not ready  because %r ? %r ' % (last_topic, sync_topic))
@@ -162,3 +196,71 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         return ROSRobotAdapter(obs_adapter, cmd_adapter, **other)
 
     
+class TFReader():
+    
+    def __init__(self):
+        self.pose = None
+        self.stamp = None
+        
+    def update(self, msg):
+        for x in msg.transforms:
+            self.update_(x)
+                
+    def update_(self, msg):
+        child_frame_id = msg.child_frame_id
+        if child_frame_id == '/base_footprint':
+            new_pose = pose_from_ROS_transform(msg.transform)
+            if False:
+                if self.pose is not None:
+                    delta = SE3.multiply(SE3.inverse(self.pose), new_pose)
+                    x, y = translation_from_SE2(SE2_from_SE3(delta))
+                    interval = (msg.header.stamp - self.stamp).to_sec()
+                    print('base_delta: delta %.3f seconds %.4f y %.4f' % (interval, x, y))
+            self.pose = new_pose
+            self.stamp = msg.header.stamp
+
+
+    def get_pose(self):
+        return self.pose
+
+def pose_from_ROS_transform(transform):
+    tx = transform.translation.x
+    ty = transform.translation.y
+    tz = transform.translation.z
+    R = rotation_from_ROS_quaternion(transform.rotation)
+    t = np.array([tx, ty, tz])
+    pose = SE3_from_rotation_translation(R, t)
+    return pose
+
+
+def rotation_from_ROS_quaternion(r):
+    import numpy as np
+    x, y, z, w = r.x, r.y, r.z, r.w
+    # my convention: w + ix + ...
+    q = np.array([w, x, y, z])
+    return rotation_from_quaternion(q)
+    
+#         if frame_id == '/odom' and child_frame_id == look:
+# #         if look in [frame_id, child_frame_id]:
+#             
+#             print msg
+#         
+#     header:
+#       seq: 0
+#       stamp:
+#         secs: 1364960270
+#         nsecs: 601320999
+#       frame_id: /base_footprint
+#     child_frame_id: /cam_back
+#     transform:
+#       translation:
+#         x: -0.015
+#         y: 0.0
+#         z: 0.0
+#       rotation:
+#         x: 0.0
+#         y: 0.0
+#         z: 0.999999682932
+#         w: 0.000796326710733
+#         
+        

@@ -82,12 +82,14 @@ def do_convert_job2(id_robot,
     
     orig_robot.read_from_log(explog)
     id_environment = explog.get_id_environment()
-    write_robot_observations(id_stream, filename, id_robot_res, robot, id_episode, id_environment)
+    write_robot_observations(id_stream, filename, id_robot_res,
+                             robot, id_episode, id_environment)
     
     
          
 @contract(robot=PassiveRobotInterface, filename='str', id_robot='str')
-def write_robot_observations(id_stream, filename, id_robot, robot, id_episode, id_environment):
+def write_robot_observations(id_stream, filename, id_robot,
+                             robot, id_episode, id_environment):
     logs_format = LogsFormat.get_reader_for(filename)
 
     boot_spec = robot.get_spec() 

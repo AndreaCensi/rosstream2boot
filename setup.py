@@ -42,10 +42,5 @@ setup(
     ],
 
     tests_require=['nose']
-    # extras_require={
-    # 'multiprocessing':  ['redis']
-    # # TODO: learn how to use this feature
-    # # TODO: add gvgen
-    # }
 )
 

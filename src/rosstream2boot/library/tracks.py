@@ -3,7 +3,7 @@ from contracts import contract
 from rosstream2boot import ROSCommandsAdapter
 import numpy as np
 import traceback
-from conf_tools.utils.indent_string import indent
+from conf_tools.utils import indent
 from rosstream2boot import logger
 
 __all__ = ['TracksAdapter']

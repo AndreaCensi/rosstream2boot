@@ -40,6 +40,13 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         while True:
             try:
                 topic, msg, t, _ = self.iterator()
+#                 if topic == '/tf':
+#                     for x in msg.transforms:
+#                         if x.header.frame_id == '/odom':
+#                             print('- tf: %20.5f sec %s -> %s' % (x.header.stamp.to_time(),
+#                                                     x.header.frame_id,
+#                                                     x.child_frame_id))
+
                 read.append((topic, msg, t))
             except RobotObservations.NotReady:
                 if not read:
@@ -52,6 +59,7 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
             asked = self.resolved2asked[topic]
             if not asked in self._topic2last:
                 self.info('Received first %s' % asked)
+                
             
             self._topic2last[asked] = msg
             
@@ -64,16 +72,16 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
     @contract(returns=RobotObservations)
     def get_observations(self):
         self.make_sure_initialized()
-        read = self._read_queue()
+        queue = self._read_queue()
         warnings.warn('might lose interesting packets')
-        _, _, last_t = read[-1]
-        last_topics = [x[0] for x in read]
+        
+        last_topics = [x[0] for x in queue]
         if len(last_topics) >= len(set(last_topics)):
             # print('dropping: %s')
             warnings.warn('warn that we are dropping')
             pass
         
-        obs = self.adapter.get_observations(self._topic2last, last_topics, last_t)
+        obs = self.adapter.get_observations(self._topic2last, queue)
         if obs is None:
             # self.info('Adapter not ready')
             raise RobotObservations.NotReady()
@@ -97,7 +105,7 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         show_progress = read_bag_stats_progress(source, logger, interval=5)
 
         # Topic to last message
-        self._topic2last = {}
+        self._topic2last = {} 
         self.iterator = show_progress.next
         self.read_one = True
         
