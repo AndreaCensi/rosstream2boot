@@ -1,5 +1,5 @@
-from bootstrapping_olympics import (RobotObservations, PassiveRobotInterface,
-    EpisodeDesc, BootSpec)
+from bootstrapping_olympics import (RobotObservations, EpisodeDesc, BootSpec,
+    RobotInterface)
 from bootstrapping_olympics.utils import unique_timestamp_string
 from contracts import contract
 from ros_node_utils import ROSNode
@@ -9,10 +9,15 @@ from rosstream2boot import (ExperimentLog, logger, ROSRobotAdapter,
     get_rs2b_config)
 import Queue
 import warnings
+import signal
+import random
+
 
 __all__ = ['ROSRobot']
 
-class ROSRobot(PassiveRobotInterface, ROSNode):
+
+class ROSRobot(RobotInterface, ROSNode):
+    
     """
     
         self.asked: list of topics asked; might include "*"
@@ -50,16 +55,17 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
                 read.append((topic, msg, t))
             except RobotObservations.NotReady:
                 if not read:
+                    # print('not ready')
                     raise
                 else:
                     break
             except StopIteration:
+                # print('finished')
                 raise RobotObservations.Finished()
             
             asked = self.resolved2asked[topic]
             if not asked in self._topic2last:
                 self.info('Received first %s' % asked)
-                
             
             self._topic2last[asked] = msg
             
@@ -71,21 +77,25 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         
     @contract(returns=RobotObservations)
     def get_observations(self):
+        # print('getting observation')
+        
         self.make_sure_initialized()
         queue = self._read_queue()
+        # print('queue')
         warnings.warn('might lose interesting packets')
         
         last_topics = [x[0] for x in queue]
         if len(last_topics) >= len(set(last_topics)):
             # print('dropping: %s')
             warnings.warn('warn that we are dropping')
-            pass
         
         obs = self.adapter.get_observations(self._topic2last, queue)
         if obs is None:
             # self.info('Adapter not ready')
+            # print('not ready')
             raise RobotObservations.NotReady()
-            
+        
+        # print('got %s' % obs)
         return obs        
 
     @staticmethod
@@ -125,6 +135,9 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
         bagfile = explog.get_bagfile()
         self.read_from_bag(bagfile)
 
+    def _on_shutdown(self):
+        raise Exception('ROS robot shutdown handler')
+        
     def connect_to_ros(self):
         """ Connects to the ROS nodes in a live system. """
         import rospy
@@ -136,7 +149,11 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
 
         warnings.warn('temporary')
         try:
-            rospy.init_node('boot_interface', disable_signals=True)
+            rospy.on_shutdown(self._on_shutdown)
+            node_name = 'boot_interface_%d' % random.randint(0, 10000)
+            rospy.init_node(node_name, log_level=rospy.DEBUG, disable_signals=True,
+                            disable_rosout=False)
+            
         except ROSException as e:
             self.debug('Ignoring %s' % e)
             
@@ -175,6 +192,17 @@ class ROSRobot(PassiveRobotInterface, ROSNode):
             except:
                 raise
         
+#         print('after initialization')
+        def f():
+            raise Exception()
+#         os._exit = f
+#         import signal
+#         signal.signal(signal.SIGTERM, f)
+#         signal.signal(signal.SIGHUP, f)
+#         signal.signal(signal.SIGKILL, f)
+        signal.signal(signal.SIGALRM, f)
+        
+#         sys.exitfunc = f
         self._topic2last = {}        
         self.iterator = next_message 
     

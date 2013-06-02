@@ -6,8 +6,8 @@ from geometry import (SE3, SE3_from_rotation_translation, SE2_from_SE3,
 from rosstream2boot import get_rs2b_config, logger
 import numpy as np
 
-
 __all__ = ['ROSRobotAdapterInterface', 'ROSRobotAdapter']
+
 
 class ROSRobotAdapterInterface(object):
     __metaclass__ = ContractsMeta
@@ -71,17 +71,20 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
             self.my_topics.append((self.odom_topic, Odometry))
             self.prev_odom = None
             
+#         use_tf = False
         self.use_tf = use_tf
         if self.use_tf:
+            try:
+                from tf.msg import tfMessage  # @UnresolvedImport
+            except:
+                tfMessage = None
             self.tfreader = TFReader()
-            self.my_topics.append(('/tf', None))
+            self.my_topics.append(('/tf', tfMessage))
             
         self.relevant_topics = self.obs_topics + self.cmd_topics + self.my_topics
         
         self.debug_nseen = 0
         self.debug_nskipped = 0
-        
-        
         
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
