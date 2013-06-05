@@ -135,8 +135,8 @@ class ROSRobot(RobotInterface, ROSNode):
         bagfile = explog.get_bagfile()
         self.read_from_bag(bagfile)
 
-    def _on_shutdown(self):
-        raise Exception('ROS robot shutdown handler')
+#     def _on_shutdown(self):
+#         raise Exception('ROS robot shutdown handler')
         
     def connect_to_ros(self):
         """ Connects to the ROS nodes in a live system. """
@@ -149,7 +149,7 @@ class ROSRobot(RobotInterface, ROSNode):
 
         warnings.warn('temporary')
         try:
-            rospy.on_shutdown(self._on_shutdown)
+            # rospy.on_shutdown(self._on_shutdown)
             node_name = 'boot_interface_%d' % random.randint(0, 10000)
             rospy.init_node(node_name, log_level=rospy.DEBUG, disable_signals=True,
                             disable_rosout=False)
