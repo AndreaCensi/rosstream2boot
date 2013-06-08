@@ -42,6 +42,11 @@ class ROSRobotAdapterInterface(object):
         """
         pass
 
+    @abstractmethod
+    @contract(commands='array', returns='se3')
+    def debug_get_vel_from_commands(self, commands):
+        pass
+        
        
 class ROSRobotAdapter(ROSRobotAdapterInterface):
     
@@ -86,6 +91,10 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         self.debug_nseen = 0
         self.debug_nskipped = 0
         
+    @contract(commands='array', returns='se3')
+    def debug_get_vel_from_commands(self, commands):
+        return self.cmd_adapter.debug_get_vel_from_commands(commands)
+
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
         """ 

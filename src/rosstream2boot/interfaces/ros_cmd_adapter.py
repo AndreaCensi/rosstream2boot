@@ -42,4 +42,9 @@ class ROSCommandsAdapter(object):
     @contract(returns='dict(str:*)', commands='array')
     def messages_from_commands(self, commands):
         """ Returns the messages to publish. """
-            
+       
+    @abstractmethod     
+    @contract(commands='array', returns='se3')
+    def debug_get_vel_from_commands(self, commands):
+        pass
+        

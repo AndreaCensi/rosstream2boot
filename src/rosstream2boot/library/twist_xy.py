@@ -3,6 +3,8 @@ from contracts import contract
 from rosstream2boot import ROSCommandsAdapter
 import numpy as np
 import warnings
+from geometry.poses import se2_from_linear_angular
+from geometry.poses_embedding import se3_from_se2
 
 
 __all__ = ['TwistAdapterXY']
@@ -30,6 +32,14 @@ class TwistAdapterXY(ROSCommandsAdapter):
     def get_stream_spec(self):        
         streamels = make_streamels_1D_float(nstreamels=2, lower=(-1), upper=1)
         return StreamSpec(id_stream=None, streamels=streamels, extra=None)
+    
+    @contract(commands='array', returns='se3')
+    def debug_get_vel_from_commands(self, commands):
+        vx = commands[0] * self.max_lin_vel
+        vy = commands[1] * self.max_lin_vel
+        w = 0
+        se2 = se2_from_linear_angular([vx, vy], w)
+        return se3_from_se2(se2)
     
     def commands_from_messages(self, messages):
         """

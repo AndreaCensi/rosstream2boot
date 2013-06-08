@@ -36,6 +36,11 @@ class ROSRobot(RobotInterface, ROSNode):
         # necessary behavior for logs.
         self.read_one = False
         
+    @contract(commands='array', returns='se3')
+    def debug_get_vel_from_commands(self, commands):
+        return self.adapter.debug_get_vel_from_commands(commands)
+    
+        
     @contract(returns=BootSpec)
     def get_spec(self):
         return self.adapter.get_spec()
