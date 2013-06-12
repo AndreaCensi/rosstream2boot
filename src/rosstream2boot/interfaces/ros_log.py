@@ -16,8 +16,20 @@ class ExperimentLog(object):
     @abstractmethod
     def get_id_environment(self):
         pass
+    
+    @abstractmethod
+    @contract(returns='dict(str:str)')
+    def get_files(self):
+        """ Returns a list of the files associated with this log. """
  
- 
+    @abstractmethod
+    @contract(returns='list(str)')
+    def get_tags(self):
+        """ Returns a list of tags used to organize the logs. """
+        
+    def get_annotations(self):
+        """ """
+        
 class ExpLogFromYaml(ExperimentLog):
     
     @contract(files='dict(str:str)', annotations='dict(str:*)')
@@ -31,6 +43,14 @@ class ExpLogFromYaml(ExperimentLog):
         self.files = files
         self.annotations = annotations
 
+
+    def get_annotations(self):
+        """ """
+        return self.annotations
+        
+    def get_files(self):
+        return dict(**self.files)
+    
     def get_outside_movie(self):
         """ REturns filename for external movie, or None if not available. """
         return self.files.get('outside', None)
@@ -45,6 +65,9 @@ class ExpLogFromYaml(ExperimentLog):
     def get_id_environment(self):
         return self.annotations['environment']['name']
 
+    def get_tags(self):
+        return self.annotations.get('tags', [])
+    
     def get_metadata(self):
         md = {}
         a = self.annotations

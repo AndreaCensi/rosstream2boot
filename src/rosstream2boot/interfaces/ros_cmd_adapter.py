@@ -31,11 +31,12 @@ class ROSCommandsAdapter(object):
     
     
     @abstractmethod
-    @contract(messages='dict(str:*)', returns='tuple(str,array)')
+    @contract(messages='dict(str:*)', returns='None|tuple(str,array)')
     def commands_from_messages(self, messages):
         """ 
             Converts the ROS topics listed here to a numpy array.
-            Returns commands_source (name of agent), array.
+            Returns commands_source (name of agent), array,
+            or None if it is not interpretable.
         """
         
     @abstractmethod

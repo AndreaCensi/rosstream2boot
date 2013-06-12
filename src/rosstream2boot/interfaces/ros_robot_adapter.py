@@ -246,7 +246,6 @@ def pose_from_ROS_transform(transform):
 
 
 def rotation_from_ROS_quaternion(r):
-    import numpy as np
     x, y, z, w = r.x, r.y, r.z, r.w
     # my convention: w + ix + ...
     q = np.array([w, x, y, z])

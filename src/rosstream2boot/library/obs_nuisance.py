@@ -1,7 +1,7 @@
-from bootstrapping_olympics import (RepresentationNuisance, StreamSpec,
-    get_boot_config)
+from bootstrapping_olympics import RepresentationNuisance, StreamSpec
+from bootstrapping_olympics.library.nuisances import Chain
 from contracts import contract
-from rosstream2boot import ROSObservationsAdapter
+from rosstream2boot import ROSObservationsAdapter, get_conftools_obs_adapters
 
 
 __all__ = ['ROSObservationsAdapterNuisance']
@@ -31,12 +31,11 @@ class ROSObservationsAdapterNuisance(ROSObservationsAdapter):
         obs = self.adapter.observations_from_messages(messages)
         return self.nuisance.transform_value(obs)
 
-    # @contract(id_adapter='str', id_nuisance='str')
-    # XXX: bug with contracts
     @staticmethod
-    def from_yaml(id_adapter, id_nuisance):
-        from rosstream2boot import get_rs2b_config
-        adapter = get_rs2b_config().obs_adapters.instance(id_adapter)
-        nuisance = get_boot_config().nuisances.instance(id_nuisance)  
+    @contract(adapter="str|code_spec",
+              nuisances="list(str|code_spec)")
+    def from_yaml(adapter, nuisances):
+        adapter = get_conftools_obs_adapters().instance_smarter(adapter)[1]
+        nuisance = Chain.instance_specs(nuisances)
         return ROSObservationsAdapterNuisance(adapter, nuisance)
 

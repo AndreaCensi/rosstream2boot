@@ -40,11 +40,12 @@ class SensorJoin(ROSObservationsAdapter):
     @staticmethod
     def from_yaml(obs_adapters):
         config = get_rs2b_config()
-        adapters = [config.obs_adapters.instance(x) for x in obs_adapters]
+        adapters = [config.obs_adapters.instance_smarter(x)[1] 
+                    for x in obs_adapters]
         return SensorJoin(adapters)
     
 
-@contract(x='list[>=1](shape(x))')
+@contract(x='list[>=1](array[*])')
 def join_arrays(x):
     if x[0].ndim == 1:
         return np.hstack(x)
