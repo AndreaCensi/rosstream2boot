@@ -11,6 +11,7 @@ import Queue
 import warnings
 import signal
 import random
+from rosstream2boot.configuration import get_conftools_robot_adapters
 
 
 __all__ = ['ROSRobot']
@@ -26,6 +27,12 @@ class ROSRobot(RobotInterface, ROSNode):
         
         self._topic2last: last message
     """
+    
+    @staticmethod
+    def from_yaml(adapter):
+        _, adapter = get_conftools_robot_adapters().instance_smarter(adapter)
+        return ROSRobot(adapter)
+    
     @contract(adapter=ROSRobotAdapter)
     def __init__(self, adapter):
         ROSNode.__init__(self)
@@ -40,7 +47,6 @@ class ROSRobot(RobotInterface, ROSNode):
     def debug_get_vel_from_commands(self, commands):
         return self.adapter.debug_get_vel_from_commands(commands)
     
-        
     @contract(returns=BootSpec)
     def get_spec(self):
         return self.adapter.get_spec()
@@ -50,13 +56,6 @@ class ROSRobot(RobotInterface, ROSNode):
         while True:
             try:
                 topic, msg, t, _ = self.iterator()
-#                 if topic == '/tf':
-#                     for x in msg.transforms:
-#                         if x.header.frame_id == '/odom':
-#                             print('- tf: %20.5f sec %s -> %s' % (x.header.stamp.to_time(),
-#                                                     x.header.frame_id,
-#                                                     x.child_frame_id))
-
                 read.append((topic, msg, t))
             except RobotObservations.NotReady:
                 if not read:
@@ -102,12 +101,6 @@ class ROSRobot(RobotInterface, ROSNode):
         
         # print('got %s' % obs)
         return obs        
-
-    @staticmethod
-    def from_yaml(adapter):
-        rs2b_config = get_rs2b_config()
-        _, adapter = rs2b_config.adapters.instance_smarter(adapter)
-        return ROSRobot(adapter)
 
     def read_from_bag(self, bagfile):
         bag_info = rosbag_info(bagfile)
@@ -197,15 +190,15 @@ class ROSRobot(RobotInterface, ROSNode):
             except:
                 raise
         
-#         print('after initialization')
-        def f():
-            raise Exception()
+# #         print('after initialization')
+#         def f():
+#             raise Exception()
 #         os._exit = f
 #         import signal
 #         signal.signal(signal.SIGTERM, f)
 #         signal.signal(signal.SIGHUP, f)
 #         signal.signal(signal.SIGKILL, f)
-        signal.signal(signal.SIGALRM, f)
+#         signal.signal(signal.SIGALRM, f)
         
 #         sys.exitfunc = f
         self._topic2last = {}        
