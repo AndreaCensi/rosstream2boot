@@ -5,7 +5,8 @@ from rosbag_utils import read_bag_stats
 
 __all__ = ['ExperimentLog', 'ExpLogFromYaml']
 
-
+        
+        
 class ExperimentLog(object):
     __metaclass__ = ContractsMeta
     
@@ -29,6 +30,8 @@ class ExperimentLog(object):
         
     def get_annotations(self):
         """ """
+        
+        
         
 class ExpLogFromYaml(ExperimentLog):
     

@@ -1,5 +1,6 @@
 from quickapp import ResourceManager
 from .rs2b_convert2 import RS2BConvert2
+from rosstream2boot.configuration import get_conftools_explogs
 
 __all__ = ['recipe_episodeready_by_convert2']
 
@@ -17,6 +18,12 @@ def recipe_episodeready_by_convert2(context, boot_root, id_robot=None):
                    (my_id_robot, id_robot))
             raise ResourceManager.CannotProvide(msg)
         id_explog = id_episode
+        
+        library = get_conftools_explogs()
+        if not id_explog in library:
+            msg = 'Log %r not found.' % id_explog
+            raise ResourceManager.CannotProvide(msg)
+        
         return c.subtask(RS2BConvert2,
                            boot_root=boot_root,
                            id_explog=id_explog,

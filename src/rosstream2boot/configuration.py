@@ -12,19 +12,21 @@ class RBConfigMaster(ConfigMaster):
         from rosstream2boot import (ROSObservationsAdapter, ROSCommandsAdapter,
                                   ROSRobotAdapter, ExperimentLog)
         
-        self.explogs = self.add_class_generic('explogs', '*.explogs.yaml', ExperimentLog)
+        self.explogs = \
+            self.add_class_generic('explogs', '*.explogs.yaml',
+                                   ExperimentLog)
         
-        self.adapters = self.add_class_generic('adapters',
-                                               '*.robot_adapters.yaml',
-                                               ROSRobotAdapter)
+        self.adapters = \
+            self.add_class_generic('adapters', '*.robot_adapters.yaml',
+                                   ROSRobotAdapter)
         
-        self.obs_adapters = self.add_class_generic('obs_adapters',
-                                                   '*.obs_adapters.yaml',
-                                                    ROSObservationsAdapter)
+        self.obs_adapters = \
+            self.add_class_generic('obs_adapters', '*.obs_adapters.yaml',
+                                    ROSObservationsAdapter)
         
-        self.cmd_adapters = self.add_class_generic('cmd_adapters',
-                                                   '*.cmd_adapters.yaml',
-                                                   ROSCommandsAdapter)
+        self.cmd_adapters = \
+            self.add_class_generic('cmd_adapters', '*.cmd_adapters.yaml',
+                                    ROSCommandsAdapter)
 
   
     def get_default_dir(self):
