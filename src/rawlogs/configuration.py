@@ -20,7 +20,7 @@ get_rawlogs_config = RawlogsConfig.get_singleton
 
 
 def get_conftools_rawlogs():
-    return get_rawlogs_config().adapters
+    return get_rawlogs_config().rawlogs
 
 
 
