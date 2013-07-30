@@ -35,7 +35,6 @@ setup(
     entry_points={
      'console_scripts': [
        'rs2b = rosstream2boot.programs:main_rs2b',
-       'rawlogs = rawlogs.programs:rawlogs_main'
       ]
     },
     install_requires=[
