@@ -5,6 +5,7 @@ from geometry import (SE3, SE3_from_rotation_translation, SE2_from_SE3,
     translation_from_SE2, rotation_from_quaternion)
 from rosstream2boot import get_rs2b_config, logger
 import numpy as np
+from ros_node_utils.conversions.poses import pose_from_ROS_transform
 
 __all__ = ['ROSRobotAdapterInterface', 'ROSRobotAdapter']
 
@@ -235,21 +236,6 @@ class TFReader():
     def get_pose(self):
         return self.pose
 
-def pose_from_ROS_transform(transform):
-    tx = transform.translation.x
-    ty = transform.translation.y
-    tz = transform.translation.z
-    R = rotation_from_ROS_quaternion(transform.rotation)
-    t = np.array([tx, ty, tz])
-    pose = SE3_from_rotation_translation(R, t)
-    return pose
-
-
-def rotation_from_ROS_quaternion(r):
-    x, y, z, w = r.x, r.y, r.z, r.w
-    # my convention: w + ix + ...
-    q = np.array([w, x, y, z])
-    return rotation_from_quaternion(q)
     
 #         if frame_id == '/odom' and child_frame_id == look:
 # #         if look in [frame_id, child_frame_id]:
