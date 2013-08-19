@@ -82,50 +82,6 @@ class ExpLogFromYaml(ExperimentLog):
         md['environment_config'] = a['environment']['config']
         return md
         
-#         annotations:
-#             robot: &unicornA_base1
-#               name: unicorn
-#               shape: unicornA
-#               profile: base1
-#             motion:
-#               agent: babbler  
-#             environment: &lab_boxes3
-#               name: vehicles_lab
-#               config: boxes3
-#     
 
-
-# class LogSlice(ExperimentLog):
-#     
-#     def __init__(self, id_log, t0, duration):
-#         self.id_log = id_log
-#         self.t0 = t0
-#         self.duration = duration
-#         
-#         self.log = get_rs2b_config().explogs  # XXX
-# 
-# 
-# class MultiLog(ExperimentLog):
-#     
-#     def __init__(self, logs):
-#         config = get_rs2b_config()
-#         
-#         logs = config.explogs.expand_names(logs)
-#         self.logs = []
-#         
-#         for id_log in logs:
-#             log = config.explogs.instance(id_log)
-#             self.logs.append(log)
-# 
-#     def get_id_environment(self):
-#         raise NotImplementedError()
-#     
-#     def read_all(self, topics):
-#         for l in self.logs:
-#             # Change episode?
-#             for m in l.read_all(topics):
-#                 yield m
-#                 
-                
                 
                  

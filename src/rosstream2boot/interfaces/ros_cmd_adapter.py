@@ -2,11 +2,14 @@ from abc import abstractmethod
 from bootstrapping_olympics import StreamSpec
 from contracts import contract, ContractsMeta
 
+
 __all__ = ['ROSCommandsAdapter']
 
 
 class ROSCommandsAdapter(object):
+
     __metaclass__ = ContractsMeta
+
 
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
@@ -47,5 +50,6 @@ class ROSCommandsAdapter(object):
     @abstractmethod     
     @contract(commands='array', returns='se3')
     def debug_get_vel_from_commands(self, commands):
-        pass
+        """ Returns the velocity from commands for debug purposes. """
+        
         

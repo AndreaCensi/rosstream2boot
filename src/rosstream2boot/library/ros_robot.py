@@ -6,12 +6,10 @@ from ros_node_utils import ROSNode
 from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info,
     resolve_topics, topics_in_bag)
 from rosstream2boot import (ExperimentLog, logger, ROSRobotAdapter,
-    get_rs2b_config)
+    get_conftools_robot_adapters)
 import Queue
-import warnings
-import signal
 import random
-from rosstream2boot.configuration import get_conftools_robot_adapters
+import warnings
 
 
 __all__ = ['ROSRobot']
@@ -56,6 +54,7 @@ class ROSRobot(RobotInterface, ROSNode):
         while True:
             try:
                 topic, msg, t, _ = self.iterator()
+                # self.debug('read %s %s' % (t, topic))
                 read.append((topic, msg, t))
             except RobotObservations.NotReady:
                 if not read:
@@ -103,9 +102,11 @@ class ROSRobot(RobotInterface, ROSNode):
         return obs        
 
     def read_from_bag(self, bagfile):
+        self.info('reading from bag file: %s' % bagfile)
         bag_info = rosbag_info(bagfile)
 
         known = topics_in_bag(bag_info)
+        # self.info('known topics: %s' % known)
 
         self._match_topics_with_known(known)
         
@@ -185,7 +186,7 @@ class ROSRobot(RobotInterface, ROSNode):
                 # self.info('got message from %s' % id(self.queue))
                 return ob
             except Queue.Empty:
-                # self.info('next_message: empty %s' % id(self.queue))
+                self.info('next_message: empty %s' % id(self.queue))
                 raise RobotObservations.NotReady()
             except:
                 raise
