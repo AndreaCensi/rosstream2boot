@@ -5,6 +5,9 @@ import numpy as np
 import traceback
 from conf_tools.utils import indent
 from rosstream2boot import logger
+import warnings
+from geometry.poses import se2_from_linear_angular
+from geometry.poses_embedding import se3_from_se2
 
 __all__ = ['TracksAdapter']
 
@@ -69,6 +72,16 @@ class TracksAdapter(ROSCommandsAdapter):
         msg = ldr_tracks(L, R)
         return {self.topic: msg}
         
+    @contract(commands='array', returns='se3')
+    def debug_get_vel_from_commands(self, commands):
+        warnings.warn("this is not precise, we don't know the conversion")
+        L = commands[0] * self.max_value
+        R = commands[1] * self.max_value
+        vx = ((L + R) / 2) * 0.01
+        vy = 0
+        omega = (L - R) * 0.01
+        vel = se2_from_linear_angular([vx, vy], omega)
+        return se3_from_se2(vel)
     
     def __str__(self):
         return ('TracksAdapter(%s,%.3f)' % 
