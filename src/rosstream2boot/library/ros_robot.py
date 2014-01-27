@@ -1,15 +1,18 @@
+import Queue
+import random
+import warnings
+
+from contracts import contract
+
 from bootstrapping_olympics import (RobotObservations, EpisodeDesc, BootSpec,
     RobotInterface)
 from bootstrapping_olympics.utils import unique_timestamp_string
-from contracts import contract
 from ros_node_utils import ROSNode
 from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info,
     resolve_topics, topics_in_bag)
 from rosstream2boot import (ExperimentLog, logger, ROSRobotAdapter,
     get_conftools_robot_adapters)
-import Queue
-import random
-import warnings
+from rawlogs.interface.rawlog import RawLog
 
 
 __all__ = ['ROSRobot']
@@ -53,8 +56,14 @@ class ROSRobot(RobotInterface, ROSNode):
         read = []
         while True:
             try:
-                topic, msg, t, _ = self.iterator()
-                # self.debug('read %s %s' % (t, topic))
+                data = self.iterator()
+                if isinstance(data, tuple) and len(data) == 2:
+                    t, raw_signal_data = data
+                    topic, msg = raw_signal_data
+                elif isinstance(data, tuple) and len(data) == 4:
+                    topic, msg, t, _ = data
+                else:
+                    raise Exception('Could not interpret data: %r' % data)
                 read.append((topic, msg, t))
             except RobotObservations.NotReady:
                 if not read:
@@ -106,7 +115,6 @@ class ROSRobot(RobotInterface, ROSNode):
         bag_info = rosbag_info(bagfile)
 
         known = topics_in_bag(bag_info)
-        # self.info('known topics: %s' % known)
 
         self._match_topics_with_known(known)
         
@@ -134,9 +142,24 @@ class ROSRobot(RobotInterface, ROSNode):
         bagfile = explog.get_bagfile()
         self.read_from_bag(bagfile)
 
-#     def _on_shutdown(self):
-#         raise Exception('ROS robot shutdown handler')
-        
+    @contract(rawlog=RawLog)
+    def read_from_rawlog(self, rawlog):
+        self.info('reading from rawlog: %s' % rawlog)
+        self.id_environment = 'not-specified'  # rawlog.get_id_environment()
+
+        signals = rawlog.get_signals()
+        signals_names = list(signals.keys())
+
+        self._match_topics_with_known(signals_names)
+
+        it = rawlog.read(topics=self.resolved)
+
+        # Topic to last message
+        self._topic2last = {}
+        self.iterator = it.next
+        self.read_one = True
+
+
     def connect_to_ros(self):
         """ Connects to the ROS nodes in a live system. """
         import rospy

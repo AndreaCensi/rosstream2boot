@@ -1,17 +1,23 @@
-from .rs2b import RS2B
+import os
+import warnings
+
+from contracts import contract, describe_type
+
 from bootstrapping_olympics import (get_boot_config, ObsKeeper,
     PassiveRobotInterface, LogsFormat)
 from bootstrapping_olympics.misc import iterate_robot_observations
 from bootstrapping_olympics.programs.manager import DataCentral
 from conf_tools import friendly_path
-from contracts import contract, describe_type
 from quickapp import QuickApp
+from rawlogs.configuration import get_conftools_rawlogs
 from rosstream2boot import get_rs2b_config, logger
 from rosstream2boot.library import ROSRobot
-import os
-import warnings
+
+from .rs2b import RS2B
+
 
 __all__ = ['RS2BConvert2']
+
 
 class RS2BConvert2(RS2B.sub, QuickApp):  # @UndefinedVariable
     cmd = 'convert2'
@@ -58,20 +64,20 @@ def do_convert_job2(id_robot,
                     id_robot_res,
                     id_explog, id_stream, id_episode,
                     filename):
-    
+    """ This uses explogs """
     rs2b_config = get_rs2b_config()
     boot_config = get_boot_config()
-    
+
     """
         id_robot: original robot must be a ROSRobot
     """
-    
+
     if os.path.exists(filename):
         msg = 'Output file exists: %s\n' % friendly_path(filename)
         msg += 'Delete to force recreating the log.'
         logger.info(msg)
         return
-    
+
     explog = rs2b_config.explogs.instance(id_explog)
     robot = boot_config.robots.instance(id_robot)
     orig_robot = robot.get_inner_components()[-1]
@@ -84,8 +90,41 @@ def do_convert_job2(id_robot,
     id_environment = explog.get_id_environment()
     write_robot_observations(id_stream, filename, id_robot_res,
                              robot, id_episode, id_environment)
+
+
+
+def do_convert_job_rawlog(id_robot,
+                    id_robot_res,
+                    id_rawlog, id_stream, id_episode,
+                    filename):
+
     
+
+    """
+        id_robot: original robot must be a ROSRobot
+    """
     
+    if os.path.exists(filename):
+        msg = 'Output file exists: %s\n' % friendly_path(filename)
+        msg += 'Delete to force recreating the log.'
+        logger.info(msg)
+        return
+    
+    rawlog = get_conftools_rawlogs().instance(id_rawlog)
+
+    boot_config = get_boot_config()
+    robot = boot_config.robots.instance(id_robot)
+    orig_robot = robot.get_inner_components()[-1]
+
+    if not isinstance(orig_robot, ROSRobot):
+        msg = 'Expected ROSRobot, got %s' % describe_type(robot)
+        raise ValueError(msg)
+    
+    orig_robot.read_from_rawlog(rawlog)
+    id_environment = 'not-specified'  # rawlog.get_id_environment()
+    write_robot_observations(id_stream, filename, id_robot_res,
+                             robot, id_episode, id_environment)
+    return 0
          
 @contract(robot=PassiveRobotInterface, filename='str', id_robot='str')
 def write_robot_observations(id_stream, filename, id_robot,

@@ -1,6 +1,8 @@
 from abc import abstractmethod
+
 from bootstrapping_olympics import StreamSpec
 from contracts import contract, ContractsMeta
+
 
 __all__ = ['ROSObservationsAdapter']
 

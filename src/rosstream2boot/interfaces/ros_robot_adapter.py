@@ -1,11 +1,12 @@
 from abc import abstractmethod
-from bootstrapping_olympics import BootSpec, RobotObservations
+
 from contracts import contract, ContractsMeta
-from geometry import (SE3, SE3_from_rotation_translation, SE2_from_SE3,
-    translation_from_SE2, rotation_from_quaternion)
-from rosstream2boot import get_rs2b_config, logger
-import numpy as np
+
+from bootstrapping_olympics import BootSpec, RobotObservations
+from geometry import SE3, SE2_from_SE3, translation_from_SE2
 from ros_node_utils.conversions.poses import pose_from_ROS_transform
+from rosstream2boot import get_rs2b_config, logger
+
 
 __all__ = ['ROSRobotAdapterInterface', 'ROSRobotAdapter']
 
@@ -151,7 +152,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
             commands_source, commands = cmds
             episode_end = False
             _, _, last_t = queue[-1]
-            timestamp = last_t.to_sec()
+            timestamp = last_t
             
             robot_pose = None
             

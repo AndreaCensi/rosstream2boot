@@ -2,6 +2,8 @@ from rosstream2boot import logger
 from abc import abstractmethod
 from contracts import contract, ContractsMeta
 from rosbag_utils import read_bag_stats
+from rawlogs import RawLog
+from rawlogs_ros.rawlog_ros import ROSLog
 
 __all__ = ['ExperimentLog', 'ExpLogFromYaml']
 
@@ -33,7 +35,7 @@ class ExperimentLog(object):
         
         
         
-class ExpLogFromYaml(ExperimentLog):
+class ExpLogFromYaml(ExperimentLog, RawLog):
     
     @contract(files='dict(str:str)', annotations='dict(str:*)')
     def __init__(self, files, annotations):
@@ -46,6 +48,7 @@ class ExpLogFromYaml(ExperimentLog):
         self.files = files
         self.annotations = annotations
 
+        self.roslog = ROSLog(self.get_bagfile(), annotations)
 
     def get_annotations(self):
         """ """
@@ -83,5 +86,19 @@ class ExpLogFromYaml(ExperimentLog):
         return md
         
 
+    # # This is the RawLog interface
+    # @contract(returns='dict(str:isinstance(RawSignal))')
+    # def get_signals(self):
+    #     # TODO: add movie if possible
+    #     return self.roslog.get_signals()
+
+    # @contract(returns='list(str)')
+    # def get_resources(self):
+    #     return self.get_files()
+
+    # def read(self, topics, start=None, stop=None):
+    #     # TODO: add movie if possible
+    #     for a in self.roslog.read(topics, start, stop):
+    #         yield a
                 
                  

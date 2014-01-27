@@ -1,9 +1,11 @@
-from .twist import TwistAdapter
+import warnings
+
 from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
 from contracts import contract
 from geometry import se2_from_linear_angular, se3_from_se2
 import numpy as np
-import warnings
+
+from .twist import TwistAdapter
 
 
 __all__ = ['TwistUnicycle']
