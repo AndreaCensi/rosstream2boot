@@ -38,7 +38,7 @@ setup(
       ]
     },
     install_requires=[
-        'BootOlympics', 'QuickApp' 
+        'BootOlympics', 'QuickApp', 'ROSBagUtils'
     ],
 
     tests_require=['nose']
