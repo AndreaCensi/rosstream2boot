@@ -1,6 +1,7 @@
+from contracts import contract
+
 from bootstrapping_olympics import RepresentationNuisance, StreamSpec
 from bootstrapping_olympics.library.nuisances import Chain
-from contracts import contract
 from rosstream2boot import ROSObservationsAdapter, get_conftools_obs_adapters
 
 

@@ -11,6 +11,9 @@ from .twist import *
 from .tracks import *
 
 from .ros_robot import *
+from .np_smallarraycmd import *
+from .np_images import *
 
 from ..interfaces import ROSRobotAdapter  # XXX
+
 
