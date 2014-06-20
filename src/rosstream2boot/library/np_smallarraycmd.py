@@ -29,7 +29,7 @@ class NPSmallArrayAsCmd(ROSCommandsAdapter):
 
     @contract(commands='array', returns='se3')
     def debug_get_vel_from_commands(self, commands):
-        raise NotImplemented
+        raise NotImplemented(type(self))
 #         vx = commands[0] * self.max_lin_vel
 #         vy = commands[1] * self.max_lin_vel
 #         w = commands[2] * self.max_ang_vel

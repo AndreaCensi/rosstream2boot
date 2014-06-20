@@ -1,7 +1,9 @@
-from bootstrapping_olympics import StreamSpec
 from contracts import contract
-from rosstream2boot import ROSObservationsAdapter, get_rs2b_config
+
+from bootstrapping_olympics import StreamSpec
 import numpy as np
+from rosstream2boot import ROSObservationsAdapter, get_rs2b_config
+
 
 __all__ = ['SensorJoin']
 

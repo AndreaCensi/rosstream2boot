@@ -1,7 +1,8 @@
 from abc import abstractmethod
 
-from bootstrapping_olympics import StreamSpec
 from contracts import contract, ContractsMeta
+
+from bootstrapping_olympics import StreamSpec
 
 
 __all__ = ['ROSObservationsAdapter']
@@ -25,6 +26,10 @@ class ROSObservationsAdapter(object):
     @abstractmethod
     @contract(messages='dict(str:*)')
     def observations_from_messages(self, messages):
-        """ Converts the topics listed here 
-            to an array respecting the spec above. """
+        """ 
+            Converts the topics listed here 
+            to an array respecting the spec above. 
+        
+            (return None if no message generated?)
+        """
 

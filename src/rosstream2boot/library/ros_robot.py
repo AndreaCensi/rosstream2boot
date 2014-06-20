@@ -7,12 +7,12 @@ from contracts import contract
 from bootstrapping_olympics import (RobotObservations, EpisodeDesc, BootSpec,
     RobotInterface)
 from bootstrapping_olympics.utils import unique_timestamp_string
+from rawlogs.interface.rawlog import RawLog
 from ros_node_utils import ROSNode
 from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info,
     resolve_topics, topics_in_bag)
 from rosstream2boot import (ExperimentLog, logger, ROSRobotAdapter,
     get_conftools_robot_adapters)
-from rawlogs.interface.rawlog import RawLog
 
 
 __all__ = ['ROSRobot']

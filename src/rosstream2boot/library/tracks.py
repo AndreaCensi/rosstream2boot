@@ -1,13 +1,16 @@
-from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
-from contracts import contract
-from rosstream2boot import ROSCommandsAdapter
-import numpy as np
 import traceback
-from conf_tools.utils import indent
-from rosstream2boot import logger
 import warnings
-from geometry.poses import se2_from_linear_angular
-from geometry.poses_embedding import se3_from_se2
+
+from contracts import contract
+
+from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
+from conf_tools.utils import indent
+from geometry import se2_from_linear_angular
+from geometry import se3_from_se2
+import numpy as np
+from rosstream2boot import ROSCommandsAdapter
+from rosstream2boot import logger
+
 
 __all__ = ['TracksAdapter']
 
