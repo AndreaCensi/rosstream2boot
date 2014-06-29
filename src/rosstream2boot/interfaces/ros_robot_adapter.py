@@ -4,7 +4,7 @@ from contracts import contract, ContractsMeta
 
 from bootstrapping_olympics import BootSpec, RobotObservations
 from geometry import SE3, SE2_from_SE3, translation_from_SE2
-from ros_node_utils.conversions.poses import pose_from_ROS_transform
+from ros_node_utils.conversions import pose_from_ROS_transform
 from rosstream2boot import get_rs2b_config, logger
 
 

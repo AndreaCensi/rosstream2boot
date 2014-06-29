@@ -7,7 +7,7 @@ from contracts import contract
 from bootstrapping_olympics import (RobotObservations, EpisodeDesc, BootSpec,
     RobotInterface)
 from bootstrapping_olympics.utils import unique_timestamp_string
-from rawlogs.interface.rawlog import RawLog
+from rawlogs import RawLog
 from ros_node_utils import ROSNode
 from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info,
     resolve_topics, topics_in_bag)
@@ -65,10 +65,10 @@ class ROSRobot(RobotInterface, ROSNode):
                 else:
                     raise Exception('Could not interpret data: %r' % data)
                 read.append((topic, msg, t))
-            except RobotObservations.NotReady:
+            except RobotObservations.NotReady as e:
                 if not read:
-                    # print('not ready')
-                    raise
+                    msg = '_read_queue sees NotReady: %s' % e
+                    raise RobotObservations.NotReady(msg)
                 else:
                     break
             except StopIteration:
@@ -103,9 +103,10 @@ class ROSRobot(RobotInterface, ROSNode):
         
         obs = self.adapter.get_observations(self._topic2last, queue)
         if obs is None:
+            msg = 'Adapter not ready'
             # self.info('Adapter not ready')
             # print('not ready')
-            raise RobotObservations.NotReady()
+            raise RobotObservations.NotReady(msg)
         
         # print('got %s' % obs)
         return obs        

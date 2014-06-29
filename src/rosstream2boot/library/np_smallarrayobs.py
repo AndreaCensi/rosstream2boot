@@ -2,11 +2,9 @@ import warnings
 
 from contracts import contract
 
-from bootstrapping_olympics.interfaces.streamels.stream_spec import StreamSpec
-from bootstrapping_olympics.interfaces.streamels.streamels_make import (
-     make_streamels_float)
 import numpy as np
 from rosstream2boot import ROSObservationsAdapter
+from streamels import StreamSpec, make_streamels_float
 
 
 __all__ = ['NPSmallArrayAsObs']

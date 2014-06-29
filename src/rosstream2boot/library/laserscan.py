@@ -1,6 +1,7 @@
 from contracts import contract
 
-from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
+from bootstrapping_olympics import StreamSpec
+from streamels import  make_streamels_1D_float
 import numpy as np
 from rosstream2boot import ROSObservationsAdapter
 

@@ -2,10 +2,10 @@ import warnings
 
 from contracts import contract
 
-from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
 from geometry import se2_from_linear_angular, se3_from_se2
 import numpy as np
 from rosstream2boot import ROSCommandsAdapter
+from streamels import StreamSpec, make_streamels_1D_float
 
 
 __all__ = ['TwistAdapter']

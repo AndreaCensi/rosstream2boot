@@ -1,12 +1,13 @@
 from contracts import contract
 
-from bootstrapping_olympics import (StreamSpec, make_streamels_2D_float,
-    make_streamels_rgb_float)
+from bootstrapping_olympics import (StreamSpec)
 import numpy as np
 from procgraph_images import rgb2gray
 from procgraph_pil import resize
-from rosstream2boot import ROSObservationsAdapter
 from ros_node_utils.conversions import ros2rgb
+from rosstream2boot import ROSObservationsAdapter
+from streamels import (make_streamels_2D_float,
+    make_streamels_rgb_float)
 
 
 __all__ = ['CameraAdapterGray', 'CameraAdapter', 'ImageAdapter']

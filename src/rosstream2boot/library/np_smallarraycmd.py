@@ -2,9 +2,9 @@ import warnings
 
 from contracts import contract
 
-from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
 import numpy as np
 from rosstream2boot import ROSCommandsAdapter
+from streamels import StreamSpec, make_streamels_1D_float
 
 
 __all__ = ['NPSmallArrayAsCmd']
@@ -29,7 +29,7 @@ class NPSmallArrayAsCmd(ROSCommandsAdapter):
 
     @contract(commands='array', returns='se3')
     def debug_get_vel_from_commands(self, commands):
-        raise NotImplemented(type(self))
+        raise NotImplementedError(type(self))
 #         vx = commands[0] * self.max_lin_vel
 #         vy = commands[1] * self.max_lin_vel
 #         w = commands[2] * self.max_ang_vel
