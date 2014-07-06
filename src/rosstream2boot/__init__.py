@@ -11,9 +11,18 @@ from .library import *
 from .programs import *
 
 
+#
+# def get_comptests():
+#     from . import unittests
+#     from comptests import get_comptests_app
+#     app = get_comptests_app(get_rs2b_config())
+#     return [app]
 
-def get_comptests():
+
+
+def jobs_comptests(context):
     from . import unittests
-    from comptests import get_comptests_app
-    app = get_comptests_app(get_rs2b_config())
-    return [app]
+    from comptests import jobs_registrar
+    config = get_rs2b_config()
+    return jobs_registrar(context, config)
+

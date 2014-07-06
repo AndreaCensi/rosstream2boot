@@ -1,10 +1,13 @@
-from .message import get_joint_velocity_msg, get_joint_position_msg
-from bootstrapping_olympics import StreamSpec, make_streamels_1D_float
-from contracts import contract
-from rosstream2boot import ROSCommandsAdapter
-import numpy as np
 import warnings
+
+from contracts import contract
+
 from b2r2b_youbot import get_JointVelocities, get_JointPositions
+import numpy as np
+from rosstream2boot import ROSCommandsAdapter
+from streamels import StreamSpec, make_streamels_1D_float
+
+from .message import get_joint_velocity_msg, get_joint_position_msg
 
 
 names = ['arm_joint_1', 'arm_joint_2', 'arm_joint_3', 'arm_joint_4',
