@@ -21,7 +21,7 @@ class CameraAdapterGray(ROSObservationsAdapter):
     
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
-        from sensor_msgs.msg import CompressedImage
+        from sensor_msgs.msg import CompressedImage  # @UnresolvedImport
         return [(self.topic, CompressedImage)]
 
     @contract(returns=StreamSpec)
@@ -55,7 +55,7 @@ class CameraAdapter(ROSObservationsAdapter):
     
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
-        from sensor_msgs.msg import CompressedImage
+        from sensor_msgs.msg import CompressedImage  # @UnresolvedImport
         return [(self.topic, CompressedImage)]
 
     @contract(returns=StreamSpec)
@@ -90,7 +90,7 @@ class ImageAdapter(ROSObservationsAdapter):
 
     @contract(returns='list(tuple(str,*))')
     def get_relevant_topics(self):
-        from sensor_msgs.msg import Image
+        from sensor_msgs.msg import Image  # @UnresolvedImport
         return [(self.topic, Image)]
 
     @contract(returns=StreamSpec)

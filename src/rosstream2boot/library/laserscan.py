@@ -23,7 +23,7 @@ class LaserScanAdapter(ROSObservationsAdapter):
     
     @contract(returns='list(tuple(str,*))')    
     def get_relevant_topics(self):
-        from sensor_msgs.msg import LaserScan
+        from sensor_msgs.msg import LaserScan  # @UnresolvedImport
         return [(self.topic, LaserScan)]
     
     @contract(returns=StreamSpec)
@@ -75,6 +75,3 @@ class LaserScanAdapter(ROSObservationsAdapter):
 #         y = np.clip(y, 0, 1)
 #         y = y[self.index_from:(self.index_to + 1)]
 #         return y
-
-    def __repr__(self):
-        return 'LaserScanAdapter(%s,%s:%s)' % (self.topic, self.index_from, self.index_to)

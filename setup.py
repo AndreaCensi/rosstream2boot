@@ -11,7 +11,7 @@ version = "1.0.0"
 setup(
     name='rosstream2boot',
     author="Andrea Censi",
-    author_email="andrea@cds.caltech.edu",
+    author_email="censi@mit.edu",
     url='http://github.com/AndreaCensi/rosstream2boot',
     version=version,
 

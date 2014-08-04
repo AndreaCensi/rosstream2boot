@@ -1,6 +1,7 @@
 # we want to be able to import it even though the packages are not installed
 def load_roslib():
-    import roslib; roslib.load_manifest('brics_actuator')  # @IgnorePep8
+    import roslib  # @UnresolvedImport
+    roslib.load_manifest('brics_actuator') 
       
 def get_JointVelocities():
     load_roslib()

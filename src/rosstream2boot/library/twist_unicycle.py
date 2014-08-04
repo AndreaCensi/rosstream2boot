@@ -55,7 +55,7 @@ class TwistUnicycle(TwistAdapter):
     
     @contract(returns='dict(str:*)', commands='array')
     def messages_from_commands(self, commands):
-        from geometry_msgs.msg import Twist
+        from geometry_msgs.msg import Twist  # @UnresolvedImport
         msg = Twist()
     
         msg.linear.x = commands[1] * self.max_lin_vel

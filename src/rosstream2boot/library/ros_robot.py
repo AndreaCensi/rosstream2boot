@@ -4,12 +4,12 @@ import warnings
 
 from contracts import contract
 
-from bootstrapping_olympics import (RobotObservations, EpisodeDesc, BootSpec,
+from bootstrapping_olympics import (EpisodeDesc, BootSpec,
     RobotInterface)
 from bootstrapping_olympics.utils import unique_timestamp_string
 from rawlogs import RawLog
 from ros_node_utils import ROSNode
-from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info,
+from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info_cached,
     resolve_topics, topics_in_bag)
 from rosstream2boot import (ExperimentLog, logger, ROSRobotAdapter,
     get_conftools_robot_adapters)
@@ -65,15 +65,15 @@ class ROSRobot(RobotInterface, ROSNode):
                 else:
                     raise Exception('Could not interpret data: %r' % data)
                 read.append((topic, msg, t))
-            except RobotObservations.NotReady as e:
+            except  NotReady as e:
                 if not read:
                     msg = '_read_queue sees NotReady: %s' % e
-                    raise RobotObservations.NotReady(msg)
+                    raise NotReady(msg)
                 else:
                     break
             except StopIteration:
                 # print('finished')
-                raise RobotObservations.Finished()
+                raise Finished()
             
             asked = self.resolved2asked[topic]
             if not asked in self._topic2last:
@@ -113,7 +113,7 @@ class ROSRobot(RobotInterface, ROSNode):
 
     def read_from_bag(self, bagfile):
         self.info('reading from bag file: %s' % bagfile)
-        bag_info = rosbag_info(bagfile)
+        bag_info = rosbag_info_cached(bagfile)
 
         known = topics_in_bag(bag_info)
 
@@ -163,9 +163,9 @@ class ROSRobot(RobotInterface, ROSNode):
 
     def connect_to_ros(self):
         """ Connects to the ROS nodes in a live system. """
-        import rospy
-        from rospy.exceptions import ROSException
-        from rospy.rostime import Time
+        import rospy  # @UnresolvedImport
+        from rospy.exceptions import ROSException  # @UnresolvedImport
+        from rospy.rostime import Time  # @UnresolvedImport
         
         known = [name for name, _ in rospy.get_published_topics()]
         self._match_topics_with_known(known)

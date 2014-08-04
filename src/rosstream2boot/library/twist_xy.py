@@ -24,11 +24,11 @@ class TwistAdapterXY(ROSCommandsAdapter):
         self.max_lin_vel = max_lin_vel
         
     def get_relevant_topics(self):
-        from geometry_msgs.msg import Twist
+        from geometry_msgs.msg import Twist  # @UnresolvedImport
         return [(self.topic, Twist)]
 
     def get_published_topics(self):
-        from geometry_msgs.msg import Twist
+        from geometry_msgs.msg import Twist  # @UnresolvedImport
         return [(self.topic_out, Twist)]
     
     def get_stream_spec(self):        
@@ -70,7 +70,7 @@ class TwistAdapterXY(ROSCommandsAdapter):
     @contract(returns='dict(str:*)', commands='array[2]')
     def messages_from_commands(self, commands):
         assert commands.size == 2
-        from geometry_msgs.msg import Twist
+        from geometry_msgs.msg import Twist  # @UnresolvedImport
         msg = Twist()
     
         msg.linear.x = commands[0] * self.max_lin_vel

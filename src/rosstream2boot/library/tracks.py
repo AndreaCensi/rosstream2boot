@@ -26,7 +26,7 @@ class TracksAdapter(ROSCommandsAdapter):
     def _get_data_class(self):
         """ Tries to load the data class """
         if self._data_class is None:
-            import roslib
+            import roslib  # @UnresolvedImport
             try:
                 roslib.load_manifest('landroid_murraylab')  # @IgnorePep8
                 from landroid_murraylab.msg import ldr_tracks  # @UnresolvedImport

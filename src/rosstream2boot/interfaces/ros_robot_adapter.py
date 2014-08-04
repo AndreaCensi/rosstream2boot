@@ -68,7 +68,7 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         self.obs_topics = self.obs_adapter.get_relevant_topics()
         self.cmd_topics = self.cmd_adapter.get_relevant_topics()
         
-        from nav_msgs.msg import Odometry
+        from nav_msgs.msg import Odometry  # @UnresolvedImport
         
         self.my_topics = []
         

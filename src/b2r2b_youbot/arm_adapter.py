@@ -45,7 +45,7 @@ class YoubotArm(ROSCommandsAdapter):
                 raise ValueError(msg)
         
     def get_relevant_topics(self):
-        from sensor_msgs.msg import JointState
+        from sensor_msgs.msg import JointState  # @UnresolvedImport
         t = []
         t += [(self.topic_joint_state, JointState)]
         return t
