@@ -1,24 +1,23 @@
+from blocks import Finished, NotReady
+from bootstrapping_olympics import (BasicRobot, BootSpec, EpisodeDesc, 
+    ExplorableRobot, PassiveRobotInterface)
+from bootstrapping_olympics.utils import unique_timestamp_string
+from contracts import contract
+from rawlogs import RawLog
+from ros_node_utils import ROSNode
+from rosbag_utils import (
+    read_bag_stats, read_bag_stats_progress, resolve_topics, rosbag_info_cached, 
+    topics_in_bag)
+from rosstream2boot import (ExperimentLog, ROSRobotAdapter, 
+    get_conftools_robot_adapters, logger)
 import Queue
 import random
 import warnings
 
-from contracts import contract
-
-from bootstrapping_olympics import (EpisodeDesc, BootSpec,
-    RobotInterface)
-from bootstrapping_olympics.utils import unique_timestamp_string
-from rawlogs import RawLog
-from ros_node_utils import ROSNode
-from rosbag_utils import (read_bag_stats, read_bag_stats_progress, rosbag_info_cached,
-    resolve_topics, topics_in_bag)
-from rosstream2boot import (ExperimentLog, logger, ROSRobotAdapter,
-    get_conftools_robot_adapters)
-
-
 __all__ = ['ROSRobot']
 
 
-class ROSRobot(RobotInterface, ROSNode):
+class ROSRobot(BasicRobot, PassiveRobotInterface, ExplorableRobot, ROSNode):
     
     """
     
@@ -43,6 +42,9 @@ class ROSRobot(RobotInterface, ROSNode):
         # If true, read_queue() only read once. This is the 
         # necessary behavior for logs.
         self.read_one = False
+        
+    def get_active_stream(self):
+        raise NotImplementedError()
         
     @contract(commands='array', returns='se3')
     def debug_get_vel_from_commands(self, commands):
@@ -87,7 +89,6 @@ class ROSRobot(RobotInterface, ROSNode):
             
         return read
         
-    @contract(returns=RobotObservations)
     def get_observations(self):
         # print('getting observation')
         
@@ -106,7 +107,7 @@ class ROSRobot(RobotInterface, ROSNode):
             msg = 'Adapter not ready'
             # self.info('Adapter not ready')
             # print('not ready')
-            raise RobotObservations.NotReady(msg)
+            raise NotReady(msg)
         
         # print('got %s' % obs)
         return obs        
@@ -211,7 +212,7 @@ class ROSRobot(RobotInterface, ROSNode):
                 return ob
             except Queue.Empty:
                 self.info('next_message: empty %s' % id(self.queue))
-                raise RobotObservations.NotReady()
+                raise NotReady()
             except:
                 raise
         

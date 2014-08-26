@@ -3,10 +3,9 @@ import warnings
 
 from contracts import contract, describe_type
 
-from bootstrapping_olympics import (get_boot_config, ObsKeeper,
-    PassiveRobotInterface, LogsFormat)
-from bootstrapping_olympics.misc import iterate_robot_observations
-from bootstrapping_olympics.programs.manager import DataCentral
+from bootstrapping_olympics import (get_boot_config,
+    PassiveRobotInterface)
+from boot_manager import DataCentral, LogsFormat
 from conf_tools import friendly_path
 from quickapp import QuickApp
 from rawlogs.configuration import get_conftools_rawlogs

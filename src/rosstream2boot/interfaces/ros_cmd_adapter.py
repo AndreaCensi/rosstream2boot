@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from bootstrapping_olympics import StreamSpec
 from contracts import contract, ContractsMeta
+from blocks.library.simple.with_queue import WithQueue
+from blocks.library.timed.checks import check_timed_named
 
 
 __all__ = ['ROSCommandsAdapter']
@@ -52,4 +54,20 @@ class ROSCommandsAdapter(object):
     def debug_get_vel_from_commands(self, commands):
         """ Returns the velocity from commands for debug purposes. """
         
-        
+    def get_translator(self):
+        class Translator(WithQueue):
+            def __init__(self, adapter):
+                self.adapter = adapter
+            def reset(self):
+                WithQueue.reset(self)
+            def put_noblock(self, value):
+                check_timed_named(value)
+                (t, (signal, x)) = value
+                messages = {}
+                messages[signal] = x
+                obtained = self.adapter.commands_from_messages(messages)
+                if obtained is not None:
+                    commands_source, u = obtained
+                    self.append((t, ('commands', u)))
+        return Translator(self)
+

@@ -1,14 +1,16 @@
 from abc import abstractmethod
-
-from contracts import contract, ContractsMeta
-
-from bootstrapping_olympics import BootSpec, RobotObservations
-from geometry import SE3, SE2_from_SE3, translation_from_SE2
+from blocks import BlackBox, Split
+from bootstrapping_olympics import BootSpec
+from contracts import ContractsMeta, contract
+from geometry import SE2_from_SE3, SE3, translation_from_SE2
 from ros_node_utils.conversions import pose_from_ROS_transform
 from rosstream2boot import get_rs2b_config, logger
 
 
-__all__ = ['ROSRobotAdapterInterface', 'ROSRobotAdapter']
+__all__ = [
+    'ROSRobotAdapterInterface', 
+    'ROSRobotAdapter',
+]
 
 
 class ROSRobotAdapterInterface(object):
@@ -34,7 +36,8 @@ class ROSRobotAdapterInterface(object):
         """ Returns a dictionary string -> Message """
         pass
 
-    @contract(returns='None|RobotObservations', messages='dict(str:*)',
+    @contract(#returns='None|RobotObservations', 
+              messages='dict(str:*)',
               queue='list(tuple(*,*,*))')
     def get_observations(self, messages, queue):
         """
@@ -93,6 +96,19 @@ class ROSRobotAdapter(ROSRobotAdapterInterface):
         self.debug_nseen = 0
         self.debug_nskipped = 0
         
+        
+    @contract(returns=BlackBox)
+    def get_translator(self):
+        """ Returns a system that acts as a translator.
+            We push things true and expect, sometime,
+            the signals 'observations' and 'commands' to come out.
+            (TODO: robot_pose)
+        """
+        tc = self.cmd_adapter.get_translator()
+        to = self.obs_adapter.get_translator()
+        t = Split(tc,to,'cmd_ad','obs_ad')
+        return t
+  
     @contract(commands='array', returns='se3')
     def debug_get_vel_from_commands(self, commands):
         return self.cmd_adapter.debug_get_vel_from_commands(commands)

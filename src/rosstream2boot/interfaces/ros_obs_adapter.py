@@ -3,6 +3,8 @@ from abc import abstractmethod
 from contracts import contract, ContractsMeta
 
 from bootstrapping_olympics import StreamSpec
+from blocks.library.simple.with_queue import WithQueue
+from blocks.library.timed.checks import check_timed_named
 
 
 __all__ = ['ROSObservationsAdapter']
@@ -22,6 +24,7 @@ class ROSObservationsAdapter(object):
     def get_stream_spec(self):
         ''' Returns the sensorimotor spec for this robot
             (a BootSpec object). '''
+        
 
     @abstractmethod
     @contract(messages='dict(str:*)')
@@ -33,3 +36,18 @@ class ROSObservationsAdapter(object):
             (return None if no message generated?)
         """
 
+    def get_translator(self):
+        class Translator(WithQueue):
+            def __init__(self, adapter):
+                self.adapter = adapter
+            def reset(self):
+                WithQueue.reset(self)
+            def put_noblock(self, value):
+                check_timed_named(value)
+                (t, (signal, x)) = value
+                messages = {}
+                messages[signal] = x
+                y = self.adapter.observations_from_messages(messages)
+                if y is not None:
+                    self.append((t, ('observations', y)))
+        return Translator(self)

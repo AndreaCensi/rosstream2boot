@@ -21,22 +21,21 @@ class TracksAdapter(ROSCommandsAdapter):
         self.topic = topic
         self.max_value = max_value
         self.use_diff = False
-        self._data_class = None
+        # Do not want to serialize this - ROS sucks in so many ways
+        # self._data_class = None
    
     def _get_data_class(self):
         """ Tries to load the data class """
-        if self._data_class is None:
-            import roslib  # @UnresolvedImport
-            try:
-                roslib.load_manifest('landroid_murraylab')  # @IgnorePep8
-                from landroid_murraylab.msg import ldr_tracks  # @UnresolvedImport
-            except Exception as e:
-                msg = 'Could not import "ldr_tracks" datatype: %s' % e
-                msg += indent(traceback.format_exc(e), '> ')
-                logger.warn(msg)
-                ldr_tracks = None
-            self._data_class = ldr_tracks
-        return self._data_class
+        import roslib  # @UnresolvedImport
+        try:
+            roslib.load_manifest('landroid_murraylab')  # @IgnorePep8
+            from landroid_murraylab.msg import ldr_tracks  # @UnresolvedImport
+        except Exception as e:
+            msg = 'Could not import "ldr_tracks" datatype: %s' % e
+            msg += indent(traceback.format_exc(e), '> ')
+            logger.warn(msg)
+            ldr_tracks = None
+        return ldr_tracks
             
     def get_relevant_topics(self):
         ldr_tracks = self._get_data_class()
@@ -55,6 +54,8 @@ class TracksAdapter(ROSCommandsAdapter):
             Converts the ROS topics listed here to a numpy array.
             Returns commands_source (name of agent), array.
         """
+        if not self.topic in messages:
+            return None
         msg = messages[self.topic]
         
         u = np.zeros(2, 'float32')        

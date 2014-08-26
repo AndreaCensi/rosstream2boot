@@ -1,12 +1,12 @@
-from contracts import contract
-
 from bootstrapping_olympics import StreamSpec
-from streamels import  make_streamels_1D_float
-import numpy as np
+from contracts import contract
 from rosstream2boot import ROSObservationsAdapter
+from streamels import make_streamels_1D_float
+import numpy as np
 
-
-__all__ = ['LaserScanAdapter']
+__all__ = [
+    'LaserScanAdapter',
+]
 
 
 class LaserScanAdapter(ROSObservationsAdapter):
@@ -34,6 +34,8 @@ class LaserScanAdapter(ROSObservationsAdapter):
     @contract(messages='dict(str:*)')
     def observations_from_messages(self, messages):
         """ Converts the topics listed here to a class of XX """
+        if not self.topic in messages:
+            return None
         msg = messages[self.topic]
         readings = np.array(msg.ranges)
         y = (readings - self.min_range) / (self.max_range - self.min_range)
