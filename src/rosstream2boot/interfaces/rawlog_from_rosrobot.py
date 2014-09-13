@@ -7,7 +7,8 @@ from bootstrapping_olympics.library.robots.nuisance_robot import NuisanceRobot
 from collections import defaultdict
 from contracts import check_isinstance, contract, describe_type
 from decent_logs import WithInternalLog
-from rawlogs import RawLog
+from rawlogs import RawLog, RawSignal
+from rawlogs.library.logpart import rawlog_bounds
 from rosbag_utils.rosbag_flexible_read import resolve_topics
 import warnings
 
@@ -32,6 +33,9 @@ class RawLogFromROSRobot(RawLog, WithInternalLog):
         self.robot = robot 
         self.orig_robot = None
 
+    def __str__(self):
+        return 'RawLogFromROSRobot(%s,%s)' % (self.rawlog, self.robot)
+    
     def get_signals(self):
         """ Returns the signals available """   
         signals0 = self.rawlog.get_signals()
@@ -41,7 +45,7 @@ class RawLogFromROSRobot(RawLog, WithInternalLog):
         ref = signals0[one].get_time_reference()
         resources = self.rawlog.get_resources()
         
-        class MySignal(object):
+        class MySignal(RawSignal):
             def get_signal_type(self):
                 return 'x-object'
             def get_time_reference(self):
@@ -80,9 +84,7 @@ class RawLogFromROSRobot(RawLog, WithInternalLog):
             if not isinstance(self.robot0, NuisanceRobot):
                 msg = 'not considered %r' % describe_type(self.robot0)
                 raise NotImplementedError(msg)
-
-
-            
+ 
         providing = ['observations', 'commands']
         for t in topics:
             if not t in providing:
@@ -136,6 +138,16 @@ class RawLogFromROSRobot(RawLog, WithInternalLog):
         
         if len(translated) == 0:
             msg = 'Something is wrong: no msgs translated.'
-            raise Exception(msg)
+            msg += '\nlog: %s' % self.rawlog
+            msg += '\nbounds: %s' % str(rawlog_bounds(self.rawlog)) 
+            msg += '\nstart: %s' % start
+            msg += '\nstop: %s' % stop
+            msg += '\nresolved: %s' % resolved
+            msg += '\nread_signals: %s' % read_signals
+            if False:
+                raise Exception(msg)
+            else:
+                from bootstrapping_olympics import logger
+                logger.warning(msg)
          
 
